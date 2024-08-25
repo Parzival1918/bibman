@@ -1,6 +1,7 @@
 import requests
 from urllib.parse import quote_plus
-from bibman.bibtex import string_to_dict
+from bibman.bibtex import string_to_bib
+from bibtexparser.bibdatabase import BibDatabase
 
 
 def send_request(identifier: str, timeout: float):
@@ -22,7 +23,7 @@ def send_request(identifier: str, timeout: float):
     return r
 
 
-def resolve_identifier(identifier: str, timeout: float) -> dict:
+def resolve_identifier(identifier: str, timeout: float) -> BibDatabase:
     # send the request
     try:
         r = send_request(identifier, timeout)
@@ -30,6 +31,9 @@ def resolve_identifier(identifier: str, timeout: float) -> dict:
         raise e
 
     # parse response into dict
-    bibtex = string_to_dict(r.text)
-
+    try:
+        bibtex = string_to_bib(r.text)
+    except Exception as e:
+        raise e
+        
     return bibtex

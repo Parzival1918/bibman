@@ -1,14 +1,20 @@
 import typer
 from typing_extensions import Annotated
-from typing import Optional
+from typing import Optional, List
 from pathlib import Path
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from pyfzf import FzfPrompt, FzfOptions
 from bibman.resolve import resolve_identifier, send_request
-from bibman.bibtex import dict_to_bibtex_string
+from bibman.bibtex import bib_to_string, file_to_bib
+from bibman.utils import in_path, Entry, QueryFields
 
 
 app = typer.Typer(
     name="bibman",
     no_args_is_help = True,
+    rich_markup_mode="rich",
+    epilog="""
+        by [bold]Pedro Juan Royo[/] (http://pedro-juan-royo.com)""",
 )
 
 
@@ -20,9 +26,11 @@ def add(
     folder: Annotated[Optional[str], typer.Option()] = None,
     location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
                                            readable=True,resolve_path=True)] = Path.home() / "references",
-    ):
+):
     # get the bibtex citation
-    bibtex_dict = resolve_identifier(identifier, timeout)
+    bibtex = resolve_identifier(identifier, timeout)
+    # select the citation entry from the BibDatabase
+    entry = bibtex.entries[0]
 
     # check the --folder option
     if folder is None:
@@ -36,7 +44,7 @@ def add(
 
     # Save the citation
     if name is None:
-        save_name = bibtex_dict["ID"] + ".bib"
+        save_name = entry["ID"] + ".bib"
     else:
         if name.endswith(".bib"):
             save_name = name
@@ -48,36 +56,83 @@ def add(
         print("File with same name already exists!")
         typer.Exit(1)
 
-    text = dict_to_bibtex_string(bibtex_dict)
+    text = bib_to_string(bibtex)
     with open(save_path, 'w') as f:
         f.write(text)
 
 
+def _show_func(location: Path, filters: dict) -> Entry:
+    for root, dirs, files in location.walk():
+        for name in files:
+            if name.endswith(".bib"): # only count bib files
+                file = root / name
+
+                # read the file contents
+                bib = file_to_bib(file)
+
+                entry = Entry(file, bib)
+
+                if entry.apply_filters(filters):
+                    yield entry
+
+
+def _show_func_fzf(location: Path, filters: dict) -> Entry:
+    for entry in _show_func(location, filters):
+        yield str(entry.path)
+
+
 @app.command()
 def show(
+    filter_title: Annotated[Optional[str], typer.Option()] = None,
+    filter_entry_types: Annotated[Optional[List[str]], typer.Option()] = None,
+    output_format: Annotated[str, typer.Option()] = "{path}: {title}", # path, title, author, year, month, entry
+    simple_output: Annotated[bool, typer.Option()] = False, 
+    interactive: Annotated[bool, typer.Option()] = False,
+    fzf_default_opts: Annotated[List[str], typer.Option()] = ["-m", "--preview='cat {}'", "--preview-window=wrap"],
     location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
                                            readable=True,resolve_path=True)] = Path.home() / "references",
-    ):
-    pass
+):
+    if simple_output: # overrides output_format
+        output_format = "{path}"
+
+    # filters
+    filter_dict = {
+        QueryFields.TITLE.name: filter_title,
+        QueryFields.ENTRY.name: filter_entry_types, 
+    }
+
+    # load the citations in --location
+    # maybe more efficient to put in a function and yield the results 
+    if not interactive:
+        for entry in _show_func(location, filter_dict):
+            print(entry.format_string(output_format))
+    else: # interactive with fzf
+        if in_path("fzf"):
+            fzf = FzfPrompt(default_options=fzf_default_opts)
+            result_paths = fzf.prompt(_show_func_fzf(location, filter_dict))
+            print(result_paths)
+        else:
+            print("Error fzf not in path")
+            raise typer.Exit(2)
 
 
-@app.command(name="import")
-def func_import(
-    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
-                                           readable=True,resolve_path=True)] = Path.home() / "references",
-    ):
-    pass
-
-
+# @app.command(name="import")
+# def func_import(
+#     location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
+#                                            readable=True,resolve_path=True)] = Path.home() / "references",
+# ):
+#     pass
 
 
 @app.command()
 def check(
     identifier: Annotated[str, typer.Argument()],
     timeout: Annotated[float, typer.Option(min=1.0)] = 5.0
-    ):
+):
     # check if identifier is valid
-    r = send_request(identifier, timeout)
+    with Progress(SpinnerColumn(), TextColumn(text_format="[progress.description]{task.description}"), transient=True) as progress:
+        progress.add_task(description=f"Checking identifier...")
+        r = send_request(identifier, timeout)
 
     if r.status_code == 200:
         print("Identifier is valid!")

@@ -9,6 +9,7 @@ dependencies = [
     "typer[all]>=0.12.4",
     "requests>=2.32.3",
     "bibtexparser>=1.4.1",
+    "pyfzf-iter>=0.0.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
