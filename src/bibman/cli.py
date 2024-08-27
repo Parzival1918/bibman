@@ -2,11 +2,14 @@ import typer
 from typing_extensions import Annotated
 from typing import Optional, List
 from pathlib import Path
+from rich import print as rprint
+from rich.prompt import Confirm
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from pyfzf import FzfPrompt, FzfOptions
 from bibman.resolve import resolve_identifier, send_request
 from bibman.bibtex import bib_to_string, file_to_bib
 from bibman.utils import in_path, Entry, QueryFields
+from bibman.subcommands import check
 
 
 app = typer.Typer(
@@ -16,6 +19,7 @@ app = typer.Typer(
     epilog="""
         by [bold]Pedro Juan Royo[/] (http://pedro-juan-royo.com)""",
 )
+app.add_typer(check.app, name="check")
 
 
 @app.command()
@@ -24,13 +28,27 @@ def add(
     timeout: Annotated[float, typer.Option(min=1.0)] = 5.0,
     name: Annotated[Optional[str], typer.Option()] = None,
     folder: Annotated[Optional[str], typer.Option()] = None,
+    note: Annotated[str, typer.Option()] = "No notes for this entry.",
+    yes: Annotated[bool, typer.Option()] = False,
+    show_entry: Annotated[bool, typer.Option()] = True,
     location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
                                            readable=True,resolve_path=True)] = Path.home() / "references",
 ):
-    # get the bibtex citation
-    bibtex = resolve_identifier(identifier, timeout)
+    with Progress(SpinnerColumn(), TextColumn(text_format="[progress.description]{task.description}"), transient=True) as progress:
+        # get the bibtex citation
+        progress.add_task(description=f"Searching BibTeX entry for {identifier}...")
+        bibtex = resolve_identifier(identifier, timeout)
+
     # select the citation entry from the BibDatabase
     entry = bibtex.entries[0]
+    text = bib_to_string(bibtex)
+
+    if show_entry:
+        rprint(text)
+        if not yes:
+            if not Confirm.ask("Do you accept this entry?"):
+                print("Entry rejected")
+                raise typer.Exit(3)
 
     # check the --folder option
     if folder is None:
@@ -45,20 +63,31 @@ def add(
     # Save the citation
     if name is None:
         save_name = entry["ID"] + ".bib"
+        note_name = "." + entry["ID"] + ".txt"
     else:
         if name.endswith(".bib"):
             save_name = name
+            note_name = "." + name.replace(".bib", ".txt")
         else:
             save_name = name + ".bib"
+            note_name = "." + entry["ID"] + ".txt"
 
+    # save entry and note
     save_path: Path = save_location / save_name
     if save_path.is_file():
         print("File with same name already exists!")
-        typer.Exit(1)
+        raise typer.Exit(1)
 
-    text = bib_to_string(bibtex)
+    note_path: Path = save_location / note_name
+    if note_path.is_file():
+        print("Note with same name already exists!")
+        raise typer.Exit(1)
+   
     with open(save_path, 'w') as f:
         f.write(text)
+
+    with open(note_path, 'w') as f:
+        f.write(note)
 
 
 def _show_func(location: Path, filters: dict) -> Entry:
@@ -116,28 +145,20 @@ def show(
             raise typer.Exit(2)
 
 
+@app.command(name="import")
+def note(
+    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
+                                           readable=True,resolve_path=True)] = Path.home() / "references",
+):
+    pass
+
+
 # @app.command(name="import")
 # def func_import(
 #     location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
 #                                            readable=True,resolve_path=True)] = Path.home() / "references",
 # ):
 #     pass
-
-
-@app.command()
-def check(
-    identifier: Annotated[str, typer.Argument()],
-    timeout: Annotated[float, typer.Option(min=1.0)] = 5.0
-):
-    # check if identifier is valid
-    with Progress(SpinnerColumn(), TextColumn(text_format="[progress.description]{task.description}"), transient=True) as progress:
-        progress.add_task(description=f"Checking identifier...")
-        r = send_request(identifier, timeout)
-
-    if r.status_code == 200:
-        print("Identifier is valid!")
-    else:
-        print("Identifier is NOT valid")
 
 
 if __name__ == "__main__":
