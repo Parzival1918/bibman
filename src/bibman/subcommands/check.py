@@ -7,7 +7,9 @@ from bibman.bibtex import file_to_bib
 from bibtexparser.bibdatabase import BibDatabase
 
 
-app = typer.Typer()
+app = typer.Typer(
+    no_args_is_help=True,
+)
 
 
 @app.command()
@@ -17,7 +19,7 @@ def identifier(
 ):
     # check if identifier is valid
     with Progress(SpinnerColumn(), TextColumn(text_format="[progress.description]{task.description}"), transient=True) as progress:
-        progress.add_task(description=f"Checking identifier...")
+        progress.add_task(description="Checking identifier...")
         try:
             r = send_request(identifier, timeout)
 
@@ -25,7 +27,7 @@ def identifier(
                 print("Identifier is valid!")
             else:
                 print("Identifier is NOT valid")
-        except Exception as e:
+        except Exception:
             print("Identifier is NOT valid")
 
 

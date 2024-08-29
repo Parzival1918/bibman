@@ -5,8 +5,8 @@ from pathlib import Path
 from rich import print as rprint
 from rich.prompt import Confirm
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from pyfzf import FzfPrompt, FzfOptions
-from bibman.resolve import resolve_identifier, send_request
+from pyfzf import FzfPrompt
+from bibman.resolve import resolve_identifier
 from bibman.bibtex import bib_to_string, file_to_bib
 from bibman.utils import in_path, Entry, QueryFields
 from bibman.subcommands import check
@@ -17,7 +17,8 @@ app = typer.Typer(
     no_args_is_help = True,
     rich_markup_mode="rich",
     epilog="""
-        by [bold]Pedro Juan Royo[/] (http://pedro-juan-royo.com)""",
+        by [bold]Pedro Juan Royo[/] (http://pedro-juan-royo.com)
+    """,
 )
 app.add_typer(check.app, name="check")
 
@@ -145,12 +146,43 @@ def show(
             raise typer.Exit(2)
 
 
-@app.command(name="import")
+@app.command()
 def note(
+    name: Annotated[str, typer.Argument()],
+    edit: Annotated[bool, typer.Option()] = False,
+    interactive: Annotated[bool, typer.Option()] = False,
+    fzf_default_opts: Annotated[List[str], typer.Option()] = ["-m", "--preview='cat {}'", "--preview-window=wrap"],
+    folder: Annotated[Optional[str], typer.Option()] = None,
     location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
                                            readable=True,resolve_path=True)] = Path.home() / "references",
 ):
-    pass
+    if folder is None:
+        search_location = location
+    else:
+        folders = folder.split("/")
+        search_location: Path = location.joinpath(*folders)
+
+    if not name.endswith(".txt"):
+        name = name + ".txt"
+
+    if not interactive:
+        for root, dirs, files in search_location.walk():
+            for filename in files:
+                if filename == name:
+                    # process file
+                    if not edit:
+                        filepath = root / filename
+                        contents = filepath.read_text()
+                        print(contents)
+    else:
+        if in_path("fzf"):
+            pass
+            # fzf = FzfPrompt(default_options=fzf_default_opts)
+            # result_paths = fzf.prompt(_show_func_fzf(location, filter_dict))
+            # print(result_paths)
+        else:
+            print("Error fzf not in path")
+            raise typer.Exit(2)    
 
 
 # @app.command(name="import")
