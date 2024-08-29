@@ -1,3 +1,3 @@
 # bibman
 
-Describe your project here.
+A CLI utility to manage references in BibTeX format.
