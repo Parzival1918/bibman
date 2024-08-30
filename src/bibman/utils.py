@@ -2,6 +2,8 @@ from shutil import which
 from pathlib import Path
 from bibtexparser.bibdatabase import BibDatabase
 from enum import StrEnum
+from collections.abc import Iterable
+from bibman.bibtex import file_to_bib
 
 def in_path(prog: str) -> bool:
     return which(prog) is not None
@@ -82,3 +84,15 @@ class Entry:
             formatted_string = formatted_string.replace("{author}", "ENTRY HAS NO AUTHOR")
 
         return formatted_string
+    
+
+def iterate_files(path: Path, filetype: str = ".bib") -> Iterable[Entry]:
+    for root, _, files in path.walk():
+        for name in files:
+            if name.endswith(filetype): # only count bib files
+                file = root / name
+
+                # read the file contents
+                bib = file_to_bib(file)
+
+                yield Entry(file, bib)

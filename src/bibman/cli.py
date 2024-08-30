@@ -6,10 +6,12 @@ from rich import print as rprint
 from rich.prompt import Confirm
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from pyfzf import FzfPrompt
+from collections.abc import Iterable
 from bibman.resolve import resolve_identifier
 from bibman.bibtex import bib_to_string, file_to_bib
-from bibman.utils import in_path, Entry, QueryFields
+from bibman.utils import in_path, Entry, QueryFields, iterate_files
 from bibman.subcommands import check
+from bibman.tui import BibApp
 
 
 app = typer.Typer(
@@ -134,12 +136,18 @@ def show(
     # load the citations in --location
     # maybe more efficient to put in a function and yield the results 
     if not interactive:
-        for entry in _show_func(location, filter_dict):
-            print(entry.format_string(output_format))
+        for entry in iterate_files(location):
+            if entry.apply_filters(filter_dict):
+                print(entry.format_string(output_format))
     else: # interactive with fzf
         if in_path("fzf"):
+            def fzf_func() -> Iterable[Entry]:
+                for entry in iterate_files(location):
+                    if entry.apply_filters(filter_dict):
+                        yield str(entry.path)
+
             fzf = FzfPrompt(default_options=fzf_default_opts)
-            result_paths = fzf.prompt(_show_func_fzf(location, filter_dict))
+            result_paths = fzf.prompt(fzf_func())
             print(result_paths)
         else:
             print("Error fzf not in path")
@@ -165,6 +173,9 @@ def note(
     if not name.endswith(".txt"):
         name = name + ".txt"
 
+    if not name.startswith("."):
+        name = "." + name
+
     if not interactive:
         for root, dirs, files in search_location.walk():
             for filename in files:
@@ -183,6 +194,49 @@ def note(
         else:
             print("Error fzf not in path")
             raise typer.Exit(2)    
+
+
+@app.command()
+def tui(
+    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
+                                           readable=True,resolve_path=True)] = Path.home() / "references",
+):
+    app = BibApp(location=location)
+    app.run()
+
+
+@app.command()
+def export(
+    filename: Annotated[Optional[str], typer.Option()] = None,
+    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
+                                           readable=True,resolve_path=True)] = Path.home() / "references",
+):
+    if filename:
+        filepath: Path = Path(filename)
+        if filepath.is_file():
+            print(f"File with name '{filename}' already exists!")
+            raise typer.Exit(4)
+        
+        # must check that there are no repeated entry names
+        entry_names = []
+        with open(filepath, 'w') as f:
+            for entry in iterate_files(location):
+                if entry.contents.entries[0]["ID"] in entry_names:
+                    print("Entry with same name already exists! Skipping...")
+                    continue
+
+                entry_names.append(entry.contents.entries[0]["ID"])
+                f.write(bib_to_string(entry.contents))
+                f.write("\n\n")
+    else:
+        entry_names = []
+        for entry in iterate_files(location):
+            if entry.contents.entries[0]["ID"] in entry_names:
+                print("Entry with same name already exists! Skipping...")
+                continue
+
+            entry_names.append(entry.contents.entries[0]["ID"])
+            print(bib_to_string(entry.contents), end="\n\n")
 
 
 # @app.command(name="import")
