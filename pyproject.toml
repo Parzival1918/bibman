@@ -11,6 +11,7 @@ dependencies = [
     "bibtexparser>=1.4.1",
     "pyfzf-iter>=0.0.1",
     "textual>=0.79.0",
+    "pylatexenc>=2.10",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

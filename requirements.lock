@@ -36,6 +36,8 @@ pyfzf-iter==0.0.1
     # via bibman
 pygments==2.18.0
     # via rich
+pylatexenc==2.10
+    # via bibman
 pyparsing==3.1.2
     # via bibtexparser
 requests==2.32.3

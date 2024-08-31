@@ -9,7 +9,7 @@ from pyfzf import FzfPrompt
 from collections.abc import Iterable
 from bibman.resolve import resolve_identifier
 from bibman.bibtex import bib_to_string, file_to_bib
-from bibman.utils import in_path, Entry, QueryFields, iterate_files
+from bibman.utils import in_path, Entry, QueryFields, iterate_files, create_html
 from bibman.subcommands import check
 from bibman.tui import BibApp
 
@@ -93,24 +93,24 @@ def add(
         f.write(note)
 
 
-def _show_func(location: Path, filters: dict) -> Entry:
-    for root, dirs, files in location.walk():
-        for name in files:
-            if name.endswith(".bib"): # only count bib files
-                file = root / name
+# def _show_func(location: Path, filters: dict) -> Entry:
+#     for root, dirs, files in location.walk():
+#         for name in files:
+#             if name.endswith(".bib"): # only count bib files
+#                 file = root / name
 
-                # read the file contents
-                bib = file_to_bib(file)
+#                 # read the file contents
+#                 bib = file_to_bib(file)
 
-                entry = Entry(file, bib)
+#                 entry = Entry(file, bib)
 
-                if entry.apply_filters(filters):
-                    yield entry
+#                 if entry.apply_filters(filters):
+#                     yield entry
 
 
-def _show_func_fzf(location: Path, filters: dict) -> Entry:
-    for entry in _show_func(location, filters):
-        yield str(entry.path)
+# def _show_func_fzf(location: Path, filters: dict) -> Entry:
+#     for entry in _show_func(location, filters):
+#         yield str(entry.path)
 
 
 @app.command()
@@ -148,7 +148,9 @@ def show(
 
             fzf = FzfPrompt(default_options=fzf_default_opts)
             result_paths = fzf.prompt(fzf_func())
-            print(result_paths)
+            for path in result_paths:
+                entry = Entry(Path(path), file_to_bib(Path(path)))
+                print(entry.format_string(output_format))
         else:
             print("Error fzf not in path")
             raise typer.Exit(2)
@@ -238,6 +240,24 @@ def export(
             entry_names.append(entry.contents.entries[0]["ID"])
             print(bib_to_string(entry.contents), end="\n\n")
 
+
+@app.command()
+def html(
+    folder_name: Annotated[str, typer.Option()] = "_site",
+    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
+                                           readable=True,resolve_path=True)] = Path.home() / "references",
+):
+    folder = location / folder_name
+    if folder.is_dir():
+        print(f"Folder with name '{folder_name}' already exists!")
+        raise typer.Exit(4)
+    
+    folder.mkdir(parents=True, exist_ok=True)
+
+    html = create_html(location)
+
+    with open(folder / "index.html", 'w') as f:
+        f.write(html)
 
 # @app.command(name="import")
 # def func_import(
