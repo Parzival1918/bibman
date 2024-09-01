@@ -2,7 +2,7 @@
 # use `rye lock` or `rye sync` to update this lockfile
 #
 # last locked with the following flags:
-#   pre: false
+#   pre: true
 #   features: []
 #   all-features: false
 #   with-sources: false
@@ -10,7 +10,7 @@
 #   universal: false
 
 -e file:.
-bibtexparser==1.4.1
+bibtexparser==2.0.0b7
     # via bibman
 certifi==2024.7.4
     # via requests
@@ -38,7 +38,6 @@ pygments==2.18.0
     # via rich
 pylatexenc==2.10
     # via bibman
-pyparsing==3.1.2
     # via bibtexparser
 requests==2.32.3
     # via bibman

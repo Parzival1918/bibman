@@ -4,7 +4,7 @@ from pathlib import Path
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from bibman.resolve import send_request
 from bibman.bibtex import file_to_bib
-from bibtexparser.bibdatabase import BibDatabase
+from bibtexparser.library import Library
 
 
 app = typer.Typer(
@@ -40,6 +40,10 @@ def library(
     # check if all entries in library are properly formatted
     with Progress(SpinnerColumn(), TextColumn(text_format="[progress.description]{task.description}"), transient=True) as progress:
         for root, dirs, files in location.walk():
+            if root.name.startswith("_"):
+                # skip _site folder
+                continue
+
             for name in files:
                 filepath = root / name
                 progress.add_task(description=f"Checking {filepath}")
@@ -59,9 +63,9 @@ def library(
                     print(f"Found file that is not of .bib extension: {filepath}")
 
                 # check that bib file is valid
-                bib_database: BibDatabase = file_to_bib(filepath)
+                bib_library: Library = file_to_bib(filepath)
 
-                if len(bib_database.entries) > 1:
+                if len(bib_library.entries) > 1:
                     print(f"Found file that contains multiple BibTeX entries: {filepath}")
                 
                 print(f"{filepath}: No warnings raised")

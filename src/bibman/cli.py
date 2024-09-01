@@ -40,11 +40,11 @@ def add(
     with Progress(SpinnerColumn(), TextColumn(text_format="[progress.description]{task.description}"), transient=True) as progress:
         # get the bibtex citation
         progress.add_task(description=f"Searching BibTeX entry for {identifier}...")
-        bibtex = resolve_identifier(identifier, timeout)
+        bibtex_library = resolve_identifier(identifier, timeout)
 
     # select the citation entry from the BibDatabase
-    entry = bibtex.entries[0]
-    text = bib_to_string(bibtex)
+    entry = bibtex_library.entries[0]
+    text = bib_to_string(bibtex_library)
 
     if show_entry:
         rprint(text)
@@ -65,15 +65,15 @@ def add(
 
     # Save the citation
     if name is None:
-        save_name = entry["ID"] + ".bib"
-        note_name = "." + entry["ID"] + ".txt"
+        save_name = entry["ID"].value + ".bib"
+        note_name = "." + entry["ID"].value + ".txt"
     else:
         if name.endswith(".bib"):
             save_name = name
             note_name = "." + name.replace(".bib", ".txt")
         else:
             save_name = name + ".bib"
-            note_name = "." + entry["ID"] + ".txt"
+            note_name = "." + entry["ID"].value + ".txt"
 
     # save entry and note
     save_path: Path = save_location / save_name
@@ -149,7 +149,7 @@ def show(
             fzf = FzfPrompt(default_options=fzf_default_opts)
             result_paths = fzf.prompt(fzf_func())
             for path in result_paths:
-                entry = Entry(Path(path), file_to_bib(Path(path)))
+                entry = Entry(Path(path), file_to_bib(Path(path)).entries[0])
                 print(entry.format_string(output_format))
         else:
             print("Error fzf not in path")
@@ -223,11 +223,11 @@ def export(
         entry_names = []
         with open(filepath, 'w') as f:
             for entry in iterate_files(location):
-                if entry.contents.entries[0]["ID"] in entry_names:
+                if entry["ID"].value in entry_names:
                     print("Entry with same name already exists! Skipping...")
                     continue
 
-                entry_names.append(entry.contents.entries[0]["ID"])
+                entry_names.append(entry["ID"].value)
                 f.write(bib_to_string(entry.contents))
                 f.write("\n\n")
     else:

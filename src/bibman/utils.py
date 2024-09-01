@@ -1,7 +1,8 @@
 from shutil import which
 from pathlib import Path
 import json
-from bibtexparser.bibdatabase import BibDatabase
+from bibtexparser.model import Entry as BibEntry
+from bibtexparser.model import Field
 from enum import StrEnum
 from collections.abc import Iterable
 from pylatexenc.latex2text import LatexNodes2Text
@@ -20,44 +21,39 @@ class QueryFields(StrEnum):
 
 class Entry:
     path: Path
-    contents: BibDatabase
+    contents: BibEntry
 
-    def __init__(self, path: Path, contents: BibDatabase):
+    def __init__(self, path: Path, contents: BibEntry):
         self.path = path
-
-        if len(contents.entries) == 0:
-            raise RuntimeError
-        elif len(contents.entries) > 1:
-            raise RuntimeError
-
+        
         self.contents = contents
 
 
     def check_field_exists(self, field: str)-> bool:
-        return field in self.contents.entries[0]
+        return field in self.contents.fields_dict
 
 
     def filter(self, query: str, field: QueryFields) -> bool:
-        contents = self.contents.entries[0] 
+        contents = self.contents.fields_dict
         match field:
             case QueryFields.TITLE:
                 if query:
-                    return self.check_field_exists(QueryFields.TITLE.value) and query in contents[QueryFields.TITLE.value]
+                    return self.check_field_exists(QueryFields.TITLE.value) and query in contents[QueryFields.TITLE.value].value
                 else:
                     return True
             case QueryFields.ENTRY:
                 if query:
-                    return self.check_field_exists(QueryFields.ENTRY.value) and contents[QueryFields.ENTRY.value] in query 
+                    return self.check_field_exists(QueryFields.ENTRY.value) and contents[QueryFields.ENTRY.value].value in query 
                 else:
                     return True
             case QueryFields.ABSTRACT:
                 if query:
-                    return self.check_field_exists(QueryFields.ABSTRACT.value) and query in contents[QueryFields.ABSTRACT.value]
+                    return self.check_field_exists(QueryFields.ABSTRACT.value) and query in contents[QueryFields.ABSTRACT.value].value
                 else:
                     return True
             case QueryFields.AUTHOR:
                 if query:
-                    return self.check_field_exists(QueryFields.AUTHOR.value) and query in contents[QueryFields.AUTHOR.value]
+                    return self.check_field_exists(QueryFields.AUTHOR.value) and query in contents[QueryFields.AUTHOR.value].value
                 else:
                     return True
             case _:
@@ -73,15 +69,15 @@ class Entry:
 
 
     def format_string(self, format: str) -> str:
-        contents = self.contents.entries[0]
+        contents = self.contents.fields_dict
 
         formatted_string = format.replace("{path}", str(self.path)) # path
         if self.check_field_exists("title"): # title
-            formatted_string = formatted_string.replace("{title}", contents["title"])
+            formatted_string = formatted_string.replace("{title}", contents["title"].value)
         else:
             formatted_string = formatted_string.replace("{title}", "ENTRY HAS NO TITLE")
         if self.check_field_exists("author"): # author
-            formatted_string = formatted_string.replace("{author}", contents["author"])
+            formatted_string = formatted_string.replace("{author}", contents["author"].value)
         else:
             formatted_string = formatted_string.replace("{author}", "ENTRY HAS NO AUTHOR")
 
@@ -97,7 +93,7 @@ def iterate_files(path: Path, filetype: str = ".bib") -> Iterable[Entry]:
                 # read the file contents
                 bib = file_to_bib(file)
 
-                yield Entry(file, bib)
+                yield Entry(file, bib.entries[0])
 
 
 def entries_as_json_string(entries: Iterable[Entry], library_location: Path) -> str:
