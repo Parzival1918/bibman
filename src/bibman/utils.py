@@ -1,5 +1,6 @@
 from shutil import which
 from pathlib import Path
+import json
 from bibtexparser.bibdatabase import BibDatabase
 from enum import StrEnum
 from collections.abc import Iterable
@@ -99,9 +100,32 @@ def iterate_files(path: Path, filetype: str = ".bib") -> Iterable[Entry]:
                 yield Entry(file, bib)
 
 
+def entries_as_json_string(entries: Iterable[Entry], library_location: Path) -> str:
+    json_entries = []
+    for entry in entries:
+        for key in entry.contents.entries[0]:
+            entry.contents.entries[0][key] = LatexNodes2Text().latex_to_text(entry.contents.entries[0][key])
+
+        note_path = entry.path.parent / ("." + entry.path.stem + ".txt")
+        if note_path.exists():
+            entry.contents.entries[0]["note"] = note_path.read_text().strip()
+        else:
+            entry.contents.entries[0]["note"] = "No note available"
+
+        entry_dict = {
+            "path": entry.path.relative_to(library_location).as_posix(),
+            "contents": entry.contents.entries[0]
+        }
+        json_entries.append(entry_dict)
+
+    return json.dumps(json_entries, indent=4, ensure_ascii=False)
+
+
 def create_html(location: Path) -> str:
+    json_string = entries_as_json_string(iterate_files(location), location)
+
     html = """
-    <!doctype html>
+    <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -110,36 +134,18 @@ def create_html(location: Path) -> str:
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     </head>
     <body>
-        <div class="container-md align-items-center justify-content-center px-5">
+        <div class="container-md align-items-center justify-content-center px-5" id="main-container">
             <div class="input-group my-3">
-                <input type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="button-search" id="input-search">
+                <input type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="button-clear" id="input-search">
+                <!-- 
                 <button class="btn btn-outline-primary" type="button" id="button-search" onclick="SearchClick()">Search</button>
+                -->
                 <button class="btn btn-outline-secondary" type="button" id="button-clear" onclick="ClearClick()">Clear</button>
             </div>
-    """
-
-    for entry in iterate_files(location):
-        note_path = entry.path.parent / ("." + entry.path.name.replace(".bib", ".txt"))
-        html += f"""
-            <div class="card my-4 bib-entry">
-                <div class="card-header text-body-secondary fs-6">
-                    Location: {str(entry.path.relative_to(location).as_posix())}
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{LatexNodes2Text().latex_to_text(entry.contents.entries[0]["title"])}</h5>
-                    <h6 class="card-subtitle mb-2 text-body-secondary">{entry.contents.entries[0]["author"]}</h6>
-                </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        {note_path.read_text()}
-                    </li>
-                </ul>
-            </div>
-        """
-
-    html += """
         </div>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fuzzysort@3.0.2/fuzzysort.min.js"></script>
         <script>
             function SearchClick() {
                 let search_string = document.getElementById("input-search").value;
@@ -172,14 +178,119 @@ def create_html(location: Path) -> str:
 
             // Search on Enter key press
             document.getElementById("input-search").addEventListener("keyup", function(event) {
-                if (event.key === "Enter") {
+                /* if (event.key === "Enter") {
                     event.preventDefault();
                     SearchClick();
-                }
+                } */
 
                 if (event.key === "Escape") {
                     event.preventDefault();
                     ClearClick();
+                }
+            });
+        </script>
+        <script>
+            // function to create HTML elements for each entry
+            function createEntryHTML(entry) {
+                let card = document.createElement("div");
+                card.className = "card my-4 bib-entry";
+                let cardHeader = document.createElement("div");
+                cardHeader.className = "card-header text-body-secondary fs-6";
+                cardHeader.innerText = "Location: " + entry.path;
+                let cardBody = document.createElement("div");
+                cardBody.className = "card-body";
+                let title = document.createElement("h5");
+                title.className = "card-title";
+                title.innerText = entry.contents.title;
+                let author = document.createElement("h6");
+                author.className = "card-subtitle mb-2 text-body-secondary";
+                author.innerText = entry.contents.author;
+                let listGroup = document.createElement("ul");
+                listGroup.className = "list-group list-group-flush";
+                let listItem = document.createElement("li");
+                listItem.className = "list-group-item";
+                listItem.innerText = entry.contents.note;
+
+                cardBody.appendChild(title);
+                cardBody.appendChild(author);
+                card.appendChild(cardHeader);
+                card.appendChild(cardBody);
+                listGroup.appendChild(listItem);
+                card.appendChild(listGroup);
+
+                return card;
+            }
+
+            // Load entries from JSON string
+            let entries = JSON.parse(`""" + json_string.replace('\\', "\\\\") + """`);
+
+            // Create HTML elements for each entry
+            let mainContainer = document.getElementById("main-container");
+            for (let i = 0; i < entries.length; i++) {
+                let entry = entries[i];
+                let entryHTML = createEntryHTML(entry);
+                mainContainer.appendChild(entryHTML);
+            }
+
+            // Enable fuzzy search as you type in the search bar
+            let bibEntries = document.getElementsByClassName("bib-entry");
+            let searchInput = document.getElementById("input-search");
+            searchInput.addEventListener("input", function() {
+                // If the search bar is empty, show all entries
+                if (searchInput.value == "") {
+                    for (let i = 0; i < bibEntries.length; i++) {
+                        let entry = bibEntries[i];
+                        entry.style.display = "block";
+                    }
+                    return;
+                }
+
+                let search_string = searchInput.value;
+                /* let results = fuzzysort.go(search_string, entries, {key: "contents.title"});
+                
+                for (let i = 0; i < bibEntries.length; i++) {
+                    let entry = bibEntries[i];
+                    let title = entry.getElementsByClassName("card-title")[0].innerText;
+                    let author = entry.getElementsByClassName("card-subtitle")[0].innerText;
+                    let note = entry.getElementsByClassName("list-group-item")[0].innerText;
+
+                    let found = false;
+                    for (let j = 0; j < results.length; j++) {
+                        let result = results[j];
+                        if (entry.getElementsByClassName("card-title")[0].innerText == result.obj.contents.title) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) {
+                        entry.style.display = "block";
+                    } else {
+                        entry.style.display = "none";
+                    }
+                } */
+                // Fuzzy search on multiple keys
+                let results = fuzzysort.go(search_string, entries, {keys: ["contents.title", "contents.author", "contents.note"], limit: 15});
+                for (let i = 0; i < bibEntries.length; i++) {
+                    let entry = bibEntries[i];
+                    let title = entry.getElementsByClassName("card-title")[0].innerText;
+                    let author = entry.getElementsByClassName("card-subtitle")[0].innerText;
+                    let note = entry.getElementsByClassName("list-group-item")[0].innerText;
+
+                    let found = false;
+                    for (let j = 0; j < results.length; j++) {
+                        let result = results[j];
+                        if (entry.getElementsByClassName("card-title")[0].innerText == result.obj.contents.title) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) {
+                        entry.style.display = "block";
+                    } else {
+                        entry.style.display = "none";
+                    }
                 }
             });
         </script>
