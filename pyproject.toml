@@ -12,6 +12,7 @@ dependencies = [
     "pyfzf-iter>=0.0.1",
     "textual>=0.79.0",
     "pylatexenc>=2.10",
+    "habanero>=1.2.6",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -34,3 +35,7 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bibman"]
+
+[tool.ruff]
+line-length = 80
+extend-exclude = [".venv"]

@@ -1,6 +1,3 @@
-# from bibtexparser.bibdatabase import BibDatabase
-# from bibtexparser.bparser import BibTexParser
-# from bibtexparser.bwriter import BibTexWriter
 from bibtexparser.library import Library
 from bibtexparser.model import Entry as BibEntry
 from bibtexparser.entrypoint import parse_string, parse_file, write_string
@@ -42,8 +39,6 @@ from pathlib import Path
 
 
 def string_to_bib(contents: str) -> Library:
-    # parser = BibTexParser(ignore_nonstandard_types=False)
-
     try:
         bib_library = parse_string(contents)
     except Exception as e:
@@ -53,11 +48,6 @@ def string_to_bib(contents: str) -> Library:
 
 
 def file_to_bib(file: Path) -> Library:
-    # with open(file, "r") as f:
-    #     contents = f.read()
-
-    # bib = string_to_bib(contents)
-
     bib_library = parse_file(file)
     if len(bib_library.entries) == 0:
         raise ValueError("No entries found in the BibTeX file")
@@ -67,23 +57,17 @@ def file_to_bib(file: Path) -> Library:
     return bib_library
 
 
-def bib_to_string(bib_library: Library) -> str:
-    # Set up a BibTeX writer
-    # writer = BibTexWriter()
-    # writer.align_values = 13
-    # writer.add_trailing_commas = True
-    # writer.indent = '    '
+def bib_to_string(bib_library: Library | BibEntry) -> str:
+    if isinstance(bib_library, BibEntry):
+        entry = bib_library
+        bib_library = Library()
+        bib_library.add(entry)
 
-    # try:
-    #     bibtex_string = str(writer.write(bib)).strip()
-    # except Exception as e:
-    #     raise e
-    
     format = BibtexFormat()
     format.value_column = 13
     format.trailing_comma = True
-    format.indent = '    '
-    
+    format.indent = "    "
+
     bib_str = write_string(bib_library, bibtex_format=format)
 
     return bib_str

@@ -16,7 +16,7 @@ from bibman.tui import BibApp
 
 app = typer.Typer(
     name="bibman",
-    no_args_is_help = True,
+    no_args_is_help=True,
     rich_markup_mode="rich",
     epilog="""
         by [bold]Pedro Juan Royo[/] (http://pedro-juan-royo.com)
@@ -34,12 +34,27 @@ def add(
     note: Annotated[str, typer.Option()] = "No notes for this entry.",
     yes: Annotated[bool, typer.Option()] = False,
     show_entry: Annotated[bool, typer.Option()] = True,
-    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
-                                           readable=True,resolve_path=True)] = Path.home() / "references",
+    location: Annotated[
+        Path,
+        typer.Option(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            writable=True,
+            readable=True,
+            resolve_path=True,
+        ),
+    ] = Path.home() / "references",
 ):
-    with Progress(SpinnerColumn(), TextColumn(text_format="[progress.description]{task.description}"), transient=True) as progress:
+    with Progress(
+        SpinnerColumn(),
+        TextColumn(text_format="[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
         # get the bibtex citation
-        progress.add_task(description=f"Searching BibTeX entry for {identifier}...")
+        progress.add_task(
+            description=f"Searching BibTeX entry for {identifier}..."
+        )
         bibtex_library = resolve_identifier(identifier, timeout)
 
     # select the citation entry from the BibDatabase
@@ -61,19 +76,19 @@ def add(
         save_location: Path = location.joinpath(*folders)
 
         # create necessary folders
-        save_location.mkdir(parents=True,exist_ok=True)
+        save_location.mkdir(parents=True, exist_ok=True)
 
     # Save the citation
     if name is None:
-        save_name = entry["ID"].value + ".bib"
-        note_name = "." + entry["ID"].value + ".txt"
+        save_name = entry.key + ".bib"
+        note_name = "." + entry.key + ".txt"
     else:
         if name.endswith(".bib"):
             save_name = name
             note_name = "." + name.replace(".bib", ".txt")
         else:
             save_name = name + ".bib"
-            note_name = "." + entry["ID"].value + ".txt"
+            note_name = "." + name + ".txt"
 
     # save entry and note
     save_path: Path = save_location / save_name
@@ -85,62 +100,58 @@ def add(
     if note_path.is_file():
         print("Note with same name already exists!")
         raise typer.Exit(1)
-   
-    with open(save_path, 'w') as f:
+
+    with open(save_path, "w") as f:
         f.write(text)
 
-    with open(note_path, 'w') as f:
+    with open(note_path, "w") as f:
         f.write(note)
-
-
-# def _show_func(location: Path, filters: dict) -> Entry:
-#     for root, dirs, files in location.walk():
-#         for name in files:
-#             if name.endswith(".bib"): # only count bib files
-#                 file = root / name
-
-#                 # read the file contents
-#                 bib = file_to_bib(file)
-
-#                 entry = Entry(file, bib)
-
-#                 if entry.apply_filters(filters):
-#                     yield entry
-
-
-# def _show_func_fzf(location: Path, filters: dict) -> Entry:
-#     for entry in _show_func(location, filters):
-#         yield str(entry.path)
 
 
 @app.command()
 def show(
     filter_title: Annotated[Optional[str], typer.Option()] = None,
     filter_entry_types: Annotated[Optional[List[str]], typer.Option()] = None,
-    output_format: Annotated[str, typer.Option()] = "{path}: {title}", # path, title, author, year, month, entry
-    simple_output: Annotated[bool, typer.Option()] = False, 
+    output_format: Annotated[
+        str, typer.Option()
+    ] = "{path}: {title}",  # path, title, author, year, month, entry
+    simple_output: Annotated[bool, typer.Option()] = False,
     interactive: Annotated[bool, typer.Option()] = False,
-    fzf_default_opts: Annotated[List[str], typer.Option()] = ["-m", "--preview='cat {}'", "--preview-window=wrap"],
-    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
-                                           readable=True,resolve_path=True)] = Path.home() / "references",
+    fzf_default_opts: Annotated[List[str], typer.Option()] = [
+        "-m",
+        "--preview='cat {}'",
+        "--preview-window=wrap",
+    ],
+    location: Annotated[
+        Path,
+        typer.Option(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            writable=True,
+            readable=True,
+            resolve_path=True,
+        ),
+    ] = Path.home() / "references",
 ):
-    if simple_output: # overrides output_format
+    if simple_output:  # overrides output_format
         output_format = "{path}"
 
     # filters
     filter_dict = {
         QueryFields.TITLE.name: filter_title,
-        QueryFields.ENTRY.name: filter_entry_types, 
+        QueryFields.ENTRY.name: filter_entry_types,
     }
 
     # load the citations in --location
-    # maybe more efficient to put in a function and yield the results 
+    # maybe more efficient to put in a function and yield the results
     if not interactive:
         for entry in iterate_files(location):
             if entry.apply_filters(filter_dict):
                 print(entry.format_string(output_format))
-    else: # interactive with fzf
+    else:  # interactive with fzf
         if in_path("fzf"):
+
             def fzf_func() -> Iterable[Entry]:
                 for entry in iterate_files(location):
                     if entry.apply_filters(filter_dict):
@@ -161,10 +172,23 @@ def note(
     name: Annotated[str, typer.Argument()],
     edit: Annotated[bool, typer.Option()] = False,
     interactive: Annotated[bool, typer.Option()] = False,
-    fzf_default_opts: Annotated[List[str], typer.Option()] = ["-m", "--preview='cat {}'", "--preview-window=wrap"],
+    fzf_default_opts: Annotated[List[str], typer.Option()] = [
+        "-m",
+        "--preview='cat {}'",
+        "--preview-window=wrap",
+    ],
     folder: Annotated[Optional[str], typer.Option()] = None,
-    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
-                                           readable=True,resolve_path=True)] = Path.home() / "references",
+    location: Annotated[
+        Path,
+        typer.Option(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            writable=True,
+            readable=True,
+            resolve_path=True,
+        ),
+    ] = Path.home() / "references",
 ):
     if folder is None:
         search_location = location
@@ -195,13 +219,22 @@ def note(
             # print(result_paths)
         else:
             print("Error fzf not in path")
-            raise typer.Exit(2)    
+            raise typer.Exit(2)
 
 
 @app.command()
 def tui(
-    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
-                                           readable=True,resolve_path=True)] = Path.home() / "references",
+    location: Annotated[
+        Path,
+        typer.Option(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            writable=True,
+            readable=True,
+            resolve_path=True,
+        ),
+    ] = Path.home() / "references",
 ):
     app = BibApp(location=location)
     app.run()
@@ -210,53 +243,71 @@ def tui(
 @app.command()
 def export(
     filename: Annotated[Optional[str], typer.Option()] = None,
-    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
-                                           readable=True,resolve_path=True)] = Path.home() / "references",
+    location: Annotated[
+        Path,
+        typer.Option(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            writable=True,
+            readable=True,
+            resolve_path=True,
+        ),
+    ] = Path.home() / "references",
 ):
     if filename:
         filepath: Path = Path(filename)
         if filepath.is_file():
             print(f"File with name '{filename}' already exists!")
             raise typer.Exit(4)
-        
+
         # must check that there are no repeated entry names
         entry_names = []
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             for entry in iterate_files(location):
-                if entry["ID"].value in entry_names:
+                if entry.contents.key in entry_names:
                     print("Entry with same name already exists! Skipping...")
                     continue
 
-                entry_names.append(entry["ID"].value)
+                entry_names.append(entry.contents.key)
                 f.write(bib_to_string(entry.contents))
-                f.write("\n\n")
+                f.write("\n")
     else:
         entry_names = []
         for entry in iterate_files(location):
-            if entry.contents.entries[0]["ID"] in entry_names:
+            if entry.contents.key in entry_names:
                 print("Entry with same name already exists! Skipping...")
                 continue
 
-            entry_names.append(entry.contents.entries[0]["ID"])
-            print(bib_to_string(entry.contents), end="\n\n")
+            entry_names.append(entry.contents.key)
+            print(bib_to_string(entry.contents), end="\n")
 
 
 @app.command()
 def html(
     folder_name: Annotated[str, typer.Option()] = "_site",
-    location: Annotated[Path, typer.Option(exists=True,file_okay=False,dir_okay=True,writable=True,
-                                           readable=True,resolve_path=True)] = Path.home() / "references",
+    location: Annotated[
+        Path,
+        typer.Option(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            writable=True,
+            readable=True,
+            resolve_path=True,
+        ),
+    ] = Path.home() / "references",
 ):
     folder = location / folder_name
     if folder.is_dir():
         print(f"Folder with name '{folder_name}' already exists!")
         raise typer.Exit(4)
-    
+
     folder.mkdir(parents=True, exist_ok=True)
 
     html = create_html(location)
 
-    with open(folder / "index.html", 'w') as f:
+    with open(folder / "index.html", "w") as f:
         f.write(html)
 
 
