@@ -158,6 +158,17 @@ def create_html(location: Path) -> str:
                 -->
                 <button class="btn btn-outline-secondary" type="button" id="button-clear" onclick="ClearClick()">Clear</button>
             </div>
+            <div class="modal fade" id="entryModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Entry contents</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="modal-body"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
@@ -169,7 +180,19 @@ def create_html(location: Path) -> str:
         + """`);
 
             function clickedEntry(i) {
-                alert(entries[i]);
+                var modal = new bootstrap.Modal(document.getElementById('entryModal'));
+
+                // show modal with entry contents
+                let entry = entries[i];
+                let modalBody = document.getElementById("modal-body");
+                modalBody.innerText = "";
+                for (let key in entry.contents) {
+                    modalBody.innerText += "    " + key + " = {" + entry.contents[key] + "},";
+                    modalBody.innerText += "\\n";
+                }
+                modalBody.innerText += "}";
+                modalBody.innerText += "\\n";
+                modal.show();
             };
 
             // function to create HTML elements for each entry
