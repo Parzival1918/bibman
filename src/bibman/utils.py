@@ -156,9 +156,10 @@ def create_html(location: Path) -> str:
                 <!-- 
                 <button class="btn btn-outline-primary" type="button" id="button-search" onclick="SearchClick()">Search</button>
                 -->
+                <button class="btn btn-outline-secondary" type="button" id="button-settings" data-bs-toggle="modal" data-bs-target="#settingsModal">Config</button>
                 <button class="btn btn-outline-secondary" type="button" id="button-clear" onclick="ClearClick()">Clear</button>
             </div>
-            <div class="modal fade" id="entryModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" id="entryModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
                     <div class="modal-header">
@@ -166,6 +167,22 @@ def create_html(location: Path) -> str:
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body" id="modal-body"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="settingsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Settings</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">Sci-Hub Link</span>
+                            <input type="text" class="form-control" value="https://sci-hub.se/" aria-label="sci-hub" id="sci-hub-link">
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -204,14 +221,17 @@ def create_html(location: Path) -> str:
                     modalBody.appendChild(div);
                 }
                 // add button to sci-hub the entry if it has a DOI
-                if (entry.contents.DOI) {
+                if (entry.contents.doi) {
                     let div = document.createElement("div");
                     div.className = "d-grid col-6 mx-auto";
                     let button = document.createElement("button");
                     button.className = "btn btn-secondary";
                     button.innerText = "Open in Sci-Hub";
+
+                    // get sci-hub link from settings
+                    let sciHubLink = document.getElementById("sci-hub-link").value;
                     button.onclick = function() {
-                        window.open("https://sci-hub.se/" + entry.contents.doi, "_blank");
+                        window.open(sciHubLink + entry.contents.doi, "_blank");
                     };
                     div.appendChild(button);
                     modalBody.appendChild(div);
