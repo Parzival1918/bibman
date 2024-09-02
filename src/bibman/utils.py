@@ -159,7 +159,7 @@ def create_html(location: Path) -> str:
                 <button class="btn btn-outline-secondary" type="button" id="button-clear" onclick="ClearClick()">Clear</button>
             </div>
             <div class="modal fade" id="entryModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="exampleModalLabel">Entry contents</h1>
@@ -176,8 +176,8 @@ def create_html(location: Path) -> str:
         <script>
             // Load entries from JSON string
             let entries = JSON.parse(`"""
-        + json_string.replace("\\", "\\\\")
-        + """`);
+            + json_string.replace("\\", "\\\\")
+            + """`);
 
             function clickedEntry(i) {
                 var modal = new bootstrap.Modal(document.getElementById('entryModal'));
@@ -187,11 +187,36 @@ def create_html(location: Path) -> str:
                 let modalBody = document.getElementById("modal-body");
                 modalBody.innerText = "";
                 for (let key in entry.contents) {
-                    modalBody.innerText += "    " + key + " = {" + entry.contents[key] + "},";
-                    modalBody.innerText += "\\n";
+                    if (key === "note") {
+                        continue;
+                    }
+                    // write the key in an h6 tag and the value in a p tag, show them side by side not in separate lines
+                    let keyElement = document.createElement("p");
+                    keyElement.className = "my-2 fw-bold";
+                    keyElement.innerText = key + ": ";
+                    let valueElement = document.createElement("p");
+                    valueElement.className = "m-2";
+                    valueElement.innerText = entry.contents[key];
+                    let div = document.createElement("div");
+                    div.className = "d-flex justify-content-start";
+                    div.appendChild(keyElement);
+                    div.appendChild(valueElement);
+                    modalBody.appendChild(div);
                 }
-                modalBody.innerText += "}";
-                modalBody.innerText += "\\n";
+                // add button to sci-hub the entry if it has a DOI
+                if (entry.contents.DOI) {
+                    let div = document.createElement("div");
+                    div.className = "d-grid col-6 mx-auto";
+                    let button = document.createElement("button");
+                    button.className = "btn btn-secondary";
+                    button.innerText = "Open in Sci-Hub";
+                    button.onclick = function() {
+                        window.open("https://sci-hub.se/" + entry.contents.doi, "_blank");
+                    };
+                    div.appendChild(button);
+                    modalBody.appendChild(div);
+                }
+                
                 modal.show();
             };
 
