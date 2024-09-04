@@ -18,6 +18,9 @@ app = typer.Typer(
     name="bibman",
     no_args_is_help=True,
     rich_markup_mode="rich",
+    help="""
+        Simple CLI tool to manage [bold]BibTeX[/] files.
+    """,
     epilog="""
         by [bold]Pedro Juan Royo[/] (http://pedro-juan-royo.com)
     """,
@@ -27,13 +30,22 @@ app.add_typer(check.app, name="check")
 
 @app.command()
 def add(
-    identifier: Annotated[str, typer.Argument()],
-    timeout: Annotated[float, typer.Option(min=1.0)] = 5.0,
-    name: Annotated[Optional[str], typer.Option()] = None,
-    folder: Annotated[Optional[str], typer.Option()] = None,
-    note: Annotated[str, typer.Option()] = "No notes for this entry.",
-    yes: Annotated[bool, typer.Option()] = False,
-    show_entry: Annotated[bool, typer.Option()] = True,
+    identifier: Annotated[str, typer.Argument(help="Identifier of the entry")],
+    timeout: Annotated[
+        float, typer.Option(min=1.0, help="Request timeout in seconds")
+    ] = 5.0,
+    name: Annotated[Optional[str], typer.Option(help="Name of file")] = None,
+    folder: Annotated[
+        Optional[str],
+        typer.Option(help="Save location relative to the library location"),
+    ] = None,
+    note: Annotated[
+        str, typer.Option(help="Notes attached to this entry")
+    ] = "No notes for this entry.",
+    yes: Annotated[bool, typer.Option("--yes/--no")] = False,
+    show_entry: Annotated[
+        bool, typer.Option(help="Show the fetched BibTeX entry.")
+    ] = True,
     location: Annotated[
         Path,
         typer.Option(
@@ -43,9 +55,22 @@ def add(
             writable=True,
             readable=True,
             resolve_path=True,
+            help="Location of the library",
         ),
     ] = Path.home() / "references",
 ):
+    """
+    Add a new BibTeX entry to the library.
+
+    IDENTIFIER can be a URL of an article, DOI, PMCID or PMID.
+    --timeout is the time in seconds to wait for the request. Default is 5 seconds.
+    --name is the name of the file to save the entry. If not provided, the key of the entry is used.
+    --folder is the folder where the entry will be saved. If not provided, the file is saved in the root of the library location.
+    --note is a note to save with the entry. Default is "No notes for this entry."
+    --yes skips the confirmation prompts. Default is --no.
+    --show-entry shows the entry before saving it. Defaults to show the entry.
+    --location is the location of the library. Default is $HOME/references.
+    """
     with Progress(
         SpinnerColumn(),
         TextColumn(text_format="[progress.description]{task.description}"),
@@ -131,9 +156,21 @@ def show(
             writable=True,
             readable=True,
             resolve_path=True,
+            help="Location of the library",
         ),
     ] = Path.home() / "references",
 ):
+    """
+    Show the entries in the library.
+
+    --filter-title filters the entries by title.
+    --filter-entry-types filters the entries by type. For example, 'article', 'book', 'inproceedings', etc.
+    --output-format is the format of the output. Default is "{path}: {title}". Available fields are: path, title, author, year, month, entry.
+    --simple-output shows only the path of the entry. Overrides --output-format, setting it to "{path}".
+    --interactive uses fzf to interactively search the entries.
+    --fzf-default-opts are the default options for fzf. Defaults are ["-m", "--preview='cat {}'", "--preview-window=wrap"].
+    --location is the location of the library. Default is $HOME/references.
+    """
     if simple_output:  # overrides output_format
         output_format = "{path}"
 
@@ -187,9 +224,20 @@ def note(
             writable=True,
             readable=True,
             resolve_path=True,
+            help="Location of the library",
         ),
     ] = Path.home() / "references",
 ):
+    """
+    Show the note associated with an entry.
+
+    NAME is the name of the entry.
+    --edit opens the note in an editor.
+    --interactive uses fzf to interactively search the entries.
+    --fzf-default-opts are the default options for fzf. Defaults are ["-m", "--preview='cat {}'", "--preview-window=wrap"].
+    --folder is the location in the library where the note is searched. By default all notes are searched.
+    --location is the location of the library. Default is $HOME/references.
+    """
     if folder is None:
         search_location = location
     else:
@@ -233,9 +281,15 @@ def tui(
             writable=True,
             readable=True,
             resolve_path=True,
+            help="Location of the library",
         ),
     ] = Path.home() / "references",
 ):
+    """
+    Open the TUI interface to manage the library.
+
+    --location is the location of the library. Default is $HOME/references.
+    """
     app = BibApp(location=location)
     app.run()
 
@@ -252,9 +306,16 @@ def export(
             writable=True,
             readable=True,
             resolve_path=True,
+            help="Location of the library",
         ),
     ] = Path.home() / "references",
 ):
+    """
+    Export the BibTeX entries.
+
+    --filename is the name of the file to save the entries. If not provided, set by default, the entries are printed to the console.
+    --location is the location of the library. Default is $HOME/references.
+    """
     if filename:
         filepath: Path = Path(filename)
         if filepath.is_file():
@@ -285,7 +346,9 @@ def export(
 
 @app.command()
 def html(
-    folder_name: Annotated[str, typer.Option()] = "_site",
+    folder_name: Annotated[
+        str, typer.Option(help="Output folder name")
+    ] = "_site",
     location: Annotated[
         Path,
         typer.Option(
@@ -295,9 +358,16 @@ def html(
             writable=True,
             readable=True,
             resolve_path=True,
+            help="Location of the library",
         ),
     ] = Path.home() / "references",
 ):
+    """
+    Create a simple HTML site with the BibTeX entries.
+
+    --folder-name is the name of the folder where the site will be created. Default is '_site'.
+    --location is the location of the library. Default is $HOME/references.
+    """
     folder = location / folder_name
     if folder.is_dir():
         print(f"Folder with name '{folder_name}' already exists!")

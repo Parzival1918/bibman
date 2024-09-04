@@ -9,14 +9,25 @@ from bibtexparser.library import Library
 
 app = typer.Typer(
     no_args_is_help=True,
+    help="""
+    Check the validity of an identifier, or check if all entries in a library are properly formatted.
+    """,
 )
 
 
 @app.command()
 def identifier(
-    identifier: Annotated[str, typer.Argument()],
-    timeout: Annotated[float, typer.Option(min=1.0)] = 5.0,
+    identifier: Annotated[str, typer.Argument(help="Identifier of the entry")],
+    timeout: Annotated[
+        float, typer.Option(min=1.0, help="Request timeout in seconds")
+    ] = 5.0,
 ):
+    """
+    Check if an identifier is valid.
+
+    IDENTIFIER can be URL of an article, DOI, PMCID or PMID.
+    --timeout is the time in seconds to wait for a response. Default is 5.0.
+    """
     # check if identifier is valid
     with Progress(
         SpinnerColumn(),
@@ -47,9 +58,15 @@ def library(
             writable=True,
             readable=True,
             resolve_path=True,
+            help="Location of the library",
         ),
     ] = Path.home() / "references",
 ):
+    """
+    Check if all entries in the library are properly formatted.
+
+    If --fix is provided, will attempt to fix any issues found.
+    """
     # check if all entries in library are properly formatted
     with Progress(
         SpinnerColumn(),

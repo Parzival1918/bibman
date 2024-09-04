@@ -193,8 +193,8 @@ def create_html(location: Path) -> str:
         <script>
             // Load entries from JSON string
             let entries = JSON.parse(`"""
-            + json_string.replace("\\", "\\\\")
-            + """`);
+        + json_string.replace("\\", "\\\\")
+        + """`);
 
             function clickedEntry(i) {
                 var modal = new bootstrap.Modal(document.getElementById('entryModal'));
