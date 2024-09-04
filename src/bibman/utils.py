@@ -9,10 +9,17 @@ from bibman.bibtex import file_to_bib
 
 
 def in_path(prog: str) -> bool:
+    """
+    Check if a program is in the PATH
+    """
     return which(prog) is not None
 
 
 class QueryFields(StrEnum):
+    """
+    Enum for the fields that can be queried
+    """
+
     TITLE = "title"
     ABSTRACT = "abstract"
     ENTRY = "ENTRYTYPE"
@@ -20,18 +27,53 @@ class QueryFields(StrEnum):
 
 
 class Entry:
+    """
+    Class to represent a single entry in the library
+
+    :param path: Path to the file
+    :type path: Path
+    :param contents: Contents of the entry, as a BibEntry object
+    :type contents: BibEntry
+    """
+
     path: Path
     contents: BibEntry
 
     def __init__(self, path: Path, contents: BibEntry):
+        """
+        Initialize the Entry object
+
+        :param path: Path to the file
+        :type path: Path
+        :param contents: Contents of the entry, as a BibEntry object
+        :type contents: BibEntry
+        """
         self.path = path
 
         self.contents = contents
 
     def check_field_exists(self, field: str) -> bool:
+        """
+        Check if a field exists in the entry
+
+        :param field: Field to check
+        :type field: str
+        :return: True if the field exists, False otherwise
+        :rtype: bool
+        """
         return field in self.contents.fields_dict
 
     def filter(self, query: str, field: QueryFields) -> bool:
+        """
+        Check if the entry passes the filter
+
+        :param query: Query string
+        :type query: str
+        :param field: Field to query
+        :type field: QueryFields
+        :return: True if the entry passes the filter, False otherwise
+        :rtype: bool
+        """
         contents = self.contents.fields_dict
         match field:
             case QueryFields.TITLE:
@@ -70,6 +112,14 @@ class Entry:
                 raise RuntimeError
 
     def apply_filters(self, filters: dict) -> bool:  # { field: query }
+        """
+        Apply filters to the entry. Pass only if all filters pass
+
+        :param filters: Filters to apply. Dictionary of **field: query** pairs
+        :type filters: dict
+        :return: True if the entry passes all filters, False otherwise
+        :rtype: bool
+        """
         for field, query in filters.items():
             if not self.filter(query, QueryFields[field]):
                 return False
@@ -77,6 +127,16 @@ class Entry:
         return True
 
     def format_string(self, format: str) -> str:
+        """
+        Format the entry as a string using a format string.
+
+        For example, the format string "{title} by {author}" will be formatted as "Title by Author"
+
+        :param format: Format string
+        :type format: str
+        :return: Formatted string
+        :rtype: str
+        """
         contents = self.contents.fields_dict
 
         formatted_string = format.replace("{path}", str(self.path))  # path
@@ -101,6 +161,17 @@ class Entry:
 
 
 def iterate_files(path: Path, filetype: str = ".bib") -> Iterable[Entry]:
+    """
+    Iterate over all files in a directory and its subdirectories,
+    yielding the entries in each file as Entry objects
+
+    :param path: Path to the directory
+    :type path: Path
+    :param filetype: Filetype to search for
+    :type filetype: str
+    :return: Generator yielding Entry objects
+    :rtype: Iterable[Entry]
+    """
     for root, _, files in path.walk():
         for name in files:
             if name.endswith(filetype):  # only count bib files
@@ -115,6 +186,16 @@ def iterate_files(path: Path, filetype: str = ".bib") -> Iterable[Entry]:
 def entries_as_json_string(
     entries: Iterable[Entry], library_location: Path
 ) -> str:
+    """
+    Convert entries to a JSON string. The library location is used to generate relative paths.
+
+    :param entries: Entries to convert
+    :type entries: Iterable[Entry]
+    :param library_location: Location of the library
+    :type library_location: Path
+    :return: JSON string
+    :rtype: str
+    """
     json_entries = []
     for entry in entries:
         entry_dict = {field.key: field.value for field in entry.contents.fields}
@@ -137,6 +218,14 @@ def entries_as_json_string(
 
 
 def create_html(location: Path) -> str:
+    """
+    Create an HTML page to display the library entries
+
+    :param location: Location of the library
+    :type location: Path
+    :return: HTML string
+    :rtype: str
+    """
     json_string = entries_as_json_string(iterate_files(location), location)
 
     html = (

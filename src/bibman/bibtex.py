@@ -39,6 +39,14 @@ from pathlib import Path
 
 
 def string_to_bib(contents: str) -> Library:
+    """
+    Parse a string into a BibTeX library.
+
+    :param contents: String to parse
+    :type contents: str
+    :return: BibTeX library
+    :rtype: bibtexparser.library.Library
+    """
     try:
         bib_library = parse_string(contents)
     except Exception as e:
@@ -48,6 +56,14 @@ def string_to_bib(contents: str) -> Library:
 
 
 def file_to_bib(file: Path) -> Library:
+    """
+    Parse a file into a BibTeX library.
+
+    :param file: Path to the file
+    :type file: pathlib.Path
+    :return: BibTeX library
+    :rtype: bibtexparser.library.Library
+    """
     bib_library = parse_file(file)
     if len(bib_library.entries) == 0:
         raise ValueError("No entries found in the BibTeX file")
@@ -58,6 +74,14 @@ def file_to_bib(file: Path) -> Library:
 
 
 def bib_to_string(bib_library: Library | BibEntry) -> str:
+    """
+    Convert a BibTeX library or entry to a string.
+
+    :param bib_library: BibTeX library or entry
+    :type bib_library: bibtexparser.library.Library | bibtexparser.model.Entry
+    :return: BibTeX string
+    :rtype: str
+    """
     if isinstance(bib_library, BibEntry):
         entry = bib_library
         bib_library = Library()

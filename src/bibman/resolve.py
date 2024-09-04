@@ -5,7 +5,17 @@ from bibtexparser.library import Library
 from habanero import cn
 
 
-def send_request(identifier: str, timeout: float):
+def send_request(identifier: str, timeout: float) -> requests.Response:
+    """
+    Send a request to the Wikipedia REST API to resolve an identifier.
+
+    :param identifier: Identifier of the entry
+    :type identifier: str
+    :param timeout: Request timeout in seconds
+    :type timeout: float
+    :return: Response object
+    :rtype: requests.Response
+    """
     # format identifier
     identifier = quote_plus(identifier)
 
@@ -18,7 +28,19 @@ def send_request(identifier: str, timeout: float):
     return r
 
 
-def send_request_habanero(identifier: str, timeout: float):
+def send_request_habanero(identifier: str, timeout: float) -> str:
+    """
+    Send a request to the CrossRef API to resolve an identifier.
+
+    Seems to be worse than the Wikipedia API, but it's here just in case.
+
+    :param identifier: Identifier of the entry
+    :type identifier: str
+    :param timeout: Request timeout in seconds
+    :type timeout: float
+    :return: BibTeX string
+    :rtype: str
+    """
     try:
         bib_str = cn.content_negotiation(
             ids=identifier, format="bibtex", timeout=timeout
@@ -30,6 +52,16 @@ def send_request_habanero(identifier: str, timeout: float):
 
 
 def resolve_identifier(identifier: str, timeout: float) -> Library:
+    """
+    Resolve an identifier to a BibTeX entry.
+
+    :param identifier: Identifier of the entry
+    :type identifier: str
+    :param timeout: Request timeout in seconds
+    :type timeout: float
+    :return: BibTeX entry
+    :rtype: bibtexparser.library.Library
+    """
     # send the request
     try:
         r = send_request(identifier, timeout)
