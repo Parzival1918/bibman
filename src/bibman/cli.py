@@ -5,6 +5,8 @@ from pathlib import Path
 from rich import print as rprint
 from rich.prompt import Confirm
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.syntax import Syntax
+from rich.console import Console
 from pyfzf import FzfPrompt
 from collections.abc import Iterable
 from bibman.resolve import resolve_identifier
@@ -86,8 +88,10 @@ def add(
     entry = bibtex_library.entries[0]
     text = bib_to_string(bibtex_library)
 
+    console = Console()
+
     if show_entry:
-        rprint(text)
+        console.print(Syntax(text, "bibtex"))
         if not yes:
             if not Confirm.ask("Do you accept this entry?"):
                 print("Entry rejected")
