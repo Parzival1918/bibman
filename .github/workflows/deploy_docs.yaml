@@ -6,9 +6,11 @@ on:
     branches:
     - main
     # Only run if docs contents are modified or mkdocs.yml is modified
+    # include if deploy workflow is also modified
     paths:
       - docs/**
       - mkdocs.yml
+      - .github/workflows/deploy_docs.yaml
 
 # This job installs dependencies, builds the book, and pushes it to `gh-pages`
 jobs:
@@ -35,13 +37,13 @@ jobs:
         rye run mkdocs build
 
     - name: Setup Pages
-      uses: actions/configure-pages@v2
+      uses: actions/configure-pages@v5
 
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v1
+      uses: actions/upload-pages-artifact@v3
       with:
         # Upload entire repository
         path: 'site'
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v1
+      uses: actions/deploy-pages@v4
