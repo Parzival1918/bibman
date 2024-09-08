@@ -132,6 +132,8 @@ class Entry:
 
         For example, the format string "{title} by {author}" will be formatted as "Title by Author"
 
+        Available fields are: path, title, author, year, month, entry_name, entry_type
+
         :param format: Format string
         :type format: str
         :return: Formatted string
@@ -142,7 +144,8 @@ class Entry:
         formatted_string = format.replace("{path}", str(self.path))  # path
         if self.check_field_exists("title"):  # title
             formatted_string = formatted_string.replace(
-                "{title}", contents["title"].value
+                "{title}",
+                LatexNodes2Text().latex_to_text(contents["title"].value),
             )
         else:
             formatted_string = formatted_string.replace(
@@ -150,12 +153,35 @@ class Entry:
             )
         if self.check_field_exists("author"):  # author
             formatted_string = formatted_string.replace(
-                "{author}", contents["author"].value
+                "{author}",
+                LatexNodes2Text().latex_to_text(contents["author"].value),
             )
         else:
             formatted_string = formatted_string.replace(
                 "{author}", "ENTRY HAS NO AUTHOR"
             )
+        if self.check_field_exists("year"):  # year
+            formatted_string = formatted_string.replace(
+                "{year}",
+                LatexNodes2Text().latex_to_text(contents["year"].value),
+            )
+        else:
+            formatted_string = formatted_string.replace(
+                "{year}", "ENTRY HAS NO YEAR"
+            )
+        if self.check_field_exists("month"):
+            formatted_string = formatted_string.replace(
+                "{month}",
+                LatexNodes2Text().latex_to_text(contents["month"].value),
+            )
+        else:
+            formatted_string = formatted_string.replace(
+                "{month}", "ENTRY HAS NO MONTH"
+            )
+
+        formatted_string = formatted_string.replace(
+            "{entry_type}", self.contents.entry_type
+        )
 
         return formatted_string
 

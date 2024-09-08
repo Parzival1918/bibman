@@ -110,7 +110,7 @@ def add(
         console.print(Syntax(text, "bibtex"))
         if not yes:
             if not Confirm.ask("Do you accept this entry?", console=console):
-                err_console.print("Entry rejected")
+                err_console.print("[red]Entry rejected[/]")
                 raise typer.Exit(1)
 
     # check the --folder option
@@ -184,7 +184,7 @@ def show(
 
     --filter-title filters the entries by title.
     --filter-entry-types filters the entries by type. For example, 'article', 'book', 'inproceedings', etc.
-    --output-format is the format of the output. Default is "{path}: {title}". Available fields are: path, title, author, year, month, entry.
+    --output-format is the format of the output. Default is "{path}: {title}". Available fields are: path, title, author, year, month, entry_name, entry_type.
     --simple-output shows only the path of the entry. Overrides --output-format, setting it to "{path}".
     --interactive uses fzf to interactively search the entries.
     --fzf-default-opts are the default options for fzf. Defaults are ["-m", "--preview='cat {}'", "--preview-window=wrap"].
@@ -241,13 +241,13 @@ def show(
 @app.command()
 def note(
     name: Annotated[str, typer.Argument()],
-    edit: Annotated[bool, typer.Option()] = False,
-    interactive: Annotated[bool, typer.Option()] = False,
-    fzf_default_opts: Annotated[List[str], typer.Option()] = [
-        "-m",
-        "--preview='cat {}'",
-        "--preview-window=wrap",
-    ],
+    # edit: Annotated[bool, typer.Option()] = False,
+    # interactive: Annotated[bool, typer.Option()] = False,
+    # fzf_default_opts: Annotated[List[str], typer.Option()] = [
+    #     "-m",
+    #     "--preview='cat {}'",
+    #     "--preview-window=wrap",
+    # ],
     folder: Annotated[Optional[str], typer.Option()] = None,
     location: Annotated[
         Optional[Path],
@@ -265,12 +265,12 @@ def note(
     Show the note associated with an entry.
 
     NAME is the name of the entry.
-    --edit opens the note in an editor.
-    --interactive uses fzf to interactively search the entries.
-    --fzf-default-opts are the default options for fzf. Defaults are ["-m", "--preview='cat {}'", "--preview-window=wrap"].
     --folder is the location in the library where the note is searched. By default all notes are searched.
     --location is the direcotry containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
+    # --edit opens the note in an editor.
+    # --interactive uses fzf to interactively search the entries.
+    # --fzf-default-opts are the default options for fzf. Defaults are ["-m", "--preview='cat {}'", "--preview-window=wrap"].
     if location is None:
         location = find_library()
         if location is None:
@@ -298,24 +298,28 @@ def note(
     if not name.startswith("."):
         name = "." + name
 
-    if not interactive:
-        for root, dirs, files in search_location.walk():
-            for filename in files:
-                if filename == name:
-                    # process file
-                    if not edit:
-                        filepath = root / filename
-                        contents = filepath.read_text()
-                        console.print(contents)
-    else:
-        if in_path("fzf"):
-            pass
-            # fzf = FzfPrompt(default_options=fzf_default_opts)
-            # result_paths = fzf.prompt(_show_func_fzf(location, filter_dict))
-            # print(result_paths)
-        else:
-            err_console.print("Error fzf not in path")
-            raise typer.Exit(1)
+    # if not interactive:
+    for root, _, files in search_location.walk():
+        for filename in files:
+            if filename == name:
+                # process file
+                # if not edit:
+                filepath = root / filename
+                contents = filepath.read_text()
+                console.print(contents)
+                raise typer.Exit(0)
+    
+    err_console.print("[red]Note not found![/]")
+    raise typer.Exit(1)
+    # else:
+    #     if in_path("fzf"):
+    #         pass
+    #         # fzf = FzfPrompt(default_options=fzf_default_opts)
+    #         # result_paths = fzf.prompt(_show_func_fzf(location, filter_dict))
+    #         # print(result_paths)
+    #     else:
+    #         err_console.print("Error fzf not in path")
+    #         raise typer.Exit(1)
 
 
 @app.command()

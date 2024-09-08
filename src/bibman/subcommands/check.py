@@ -55,7 +55,12 @@ def identifier(
 
 @app.command()
 def library(
-    fix: Annotated[bool, typer.Option()] = False,
+    fix: Annotated[
+        bool,
+        typer.Option(
+            "--fix/--ignore", help="Try to fix any problems identified"
+        ),
+    ] = False,
     location: Annotated[
         Optional[Path],
         typer.Option(
@@ -71,7 +76,7 @@ def library(
     """
     Check if all entries in the library are properly formatted.
 
-    If --fix is provided, will attempt to fix any issues found.
+    If --fix is provided, will attempt to fix any issues found. Mainly removing files that are not managed by bibman.
     --location is the direcotry containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:
@@ -106,6 +111,13 @@ def library(
                     console.print(
                         f"[red]Note file found that does not have an entry file associated[/]: {name}"
                     )
+                    if fix:
+                        console.print(
+                            " |-> Removing note file...",
+                            end="",
+                        )
+                        filepath.unlink()
+                        console.print(" [green]Done[/]")
                 else:
                     console.print(
                         f"{filepath}: [green]Note with matching entry found[/]"
@@ -114,8 +126,16 @@ def library(
 
             if not name.endswith(".bib"):
                 console.print(
-                    f"[red]Found file that is not of .bib extension:[/] {filepath}"
+                    f"[red]Found file that is not managed by bibman:[/] {filepath}"
                 )
+
+                if fix:
+                    console.print(
+                        " |-> Removing file...",
+                        end="",
+                    )
+                    filepath.unlink()
+                    console.print(" [green]Done[/]")
 
             # check that bib file is valid
             bib_library: Library = file_to_bib(filepath)
