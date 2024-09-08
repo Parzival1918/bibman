@@ -240,7 +240,7 @@ def show(
 
 @app.command()
 def note(
-    name: Annotated[str, typer.Argument()],
+    name: Annotated[str, typer.Argument(help="Name of the entry to show the note of")],
     # edit: Annotated[bool, typer.Option()] = False,
     # interactive: Annotated[bool, typer.Option()] = False,
     # fzf_default_opts: Annotated[List[str], typer.Option()] = [
@@ -248,7 +248,7 @@ def note(
     #     "--preview='cat {}'",
     #     "--preview-window=wrap",
     # ],
-    folder: Annotated[Optional[str], typer.Option()] = None,
+    folder: Annotated[Optional[str], typer.Option(help="Library location where to search")] = None,
     location: Annotated[
         Optional[Path],
         typer.Option(
