@@ -1,5 +1,7 @@
 # html
 
+![GIF](../media/html.gif)
+
 Command to **create a simple HTML page to view your library contents and search interactively.**
 
 ## Usage

@@ -1,5 +1,7 @@
 # tui
 
+![GIF](../media/tui.gif)
+
 Command to **enter a TUI to interact with the library.**
 
 You can view the entries and their notes, as well as edit them.

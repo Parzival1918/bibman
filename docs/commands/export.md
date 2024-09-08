@@ -1,5 +1,7 @@
 # export
 
+![GIF](../media/export.gif)
+
 Command to **export the library contents to a file.**
 
 Entries with same name but in different folders of the library will be ignored and only the first one found will be exported.

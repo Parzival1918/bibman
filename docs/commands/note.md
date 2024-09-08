@@ -1,5 +1,7 @@
 # note
 
+![GIF](../media/note.gif)
+
 Command to **view the note of an entry.**
 
 ## Usage

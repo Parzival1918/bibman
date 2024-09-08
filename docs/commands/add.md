@@ -1,5 +1,7 @@
 # add
 
+![GIF](../media/add.gif)
+
 Command to **add new entries to the library.**
 
 ## Usage

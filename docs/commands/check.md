@@ -1,5 +1,7 @@
 # check
 
+![GIF](../media/check.gif)
+
 Command to **check the validity of an identifier or the library contents.**
 
 ## Usage

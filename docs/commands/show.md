@@ -1,5 +1,7 @@
 # show
 
+![GIF](../media/show.gif)
+
 Command to **show the contents of some or all entries in the library.**
 
 ## Usage
