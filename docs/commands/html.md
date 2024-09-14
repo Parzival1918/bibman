@@ -4,6 +4,8 @@
 
 Command to **create a simple HTML page to view your library contents and search interactively.**
 
+Check my references created using this command and hosted in GitHub Pages [here](https://parzival1918.github.io/references/).
+
 ## Usage
 
 ```bash
