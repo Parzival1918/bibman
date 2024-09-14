@@ -15,8 +15,14 @@ dependencies = [
     "habanero>=1.2.6",
     "bs4>=0.0.2",
 ]
-readme = "README.md"
+readme = "README_pypi.md"
+license = "MIT"
 requires-python = ">= 3.8"
+
+[project.urls]
+Homepage = "https://github.com/Parzival1918/bibman"
+Documentation = "https://parzival1918.github.io/bibman/"
+Repository = "https://github.com/Parzival1918/bibman"
 
 [project.scripts]
 "bibman" = "bibmancli:main"
