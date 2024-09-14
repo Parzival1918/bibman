@@ -9,12 +9,12 @@ from rich.console import Console
 import shutil
 from pyfzf import FzfPrompt
 from collections.abc import Iterable
-from bibman.resolve import resolve_identifier
-from bibman.bibtex import bib_to_string, file_to_bib, file_to_library
-from bibman.utils import in_path, Entry, QueryFields, iterate_files, create_html
-from bibman.config_file import find_library, get_library, create_toml_contents
-from bibman.subcommands import check, pdf
-from bibman.tui import BibApp
+from bibmancli.resolve import resolve_identifier
+from bibmancli.bibtex import bib_to_string, file_to_bib, file_to_library
+from bibmancli.utils import in_path, Entry, QueryFields, iterate_files, create_html
+from bibmancli.config_file import find_library, get_library, create_toml_contents
+from bibmancli.subcommands import check, pdf
+from bibmancli.tui import BibApp
 
 
 app = typer.Typer(

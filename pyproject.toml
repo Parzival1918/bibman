@@ -1,7 +1,7 @@
 [project]
-name = "bibman"
+name = "bibmancli"
 version = "0.1.0"
-description = "Add your description here"
+description = "Simple CLI tool to manage BibTeX files."
 authors = [
     { name = "Pedro Juan Royo", email = "pedro.juan.royo@gmail.com" }
 ]
@@ -19,7 +19,7 @@ readme = "README.md"
 requires-python = ">= 3.8"
 
 [project.scripts]
-"bibman" = "bibman:main"
+"bibman" = "bibmancli:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -36,7 +36,7 @@ dev-dependencies = [
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/bibman"]
+packages = ["src/bibmancli"]
 
 [tool.ruff]
 line-length = 80

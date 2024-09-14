@@ -1,4 +1,4 @@
-from bibman import resolve
+from bibmancli import resolve
 
 
 def test_resolve_identifier():

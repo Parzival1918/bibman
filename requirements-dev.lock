@@ -15,9 +15,9 @@ babel==2.16.0
 beautifulsoup4==4.13.0b2
     # via bs4
 bibtexparser==2.0.0b7
-    # via bibman
+    # via bibmancli
 bs4==0.0.2
-    # via bibman
+    # via bibmancli
 certifi==2024.7.4
     # via requests
 charset-normalizer==3.3.2
@@ -30,7 +30,7 @@ colorama==0.4.6
 ghp-import==2.1.0
     # via mkdocs
 habanero==1.2.6
-    # via bibman
+    # via bibmancli
 idna==3.7
     # via requests
 iniconfig==2.0.0
@@ -78,12 +78,12 @@ platformdirs==4.2.2
 pluggy==1.5.0
     # via pytest
 pyfzf-iter==0.0.1
-    # via bibman
+    # via bibmancli
 pygments==2.18.0
     # via mkdocs-material
     # via rich
 pylatexenc==2.10
-    # via bibman
+    # via bibmancli
     # via bibtexparser
 pymdown-extensions==10.9
     # via mkdocs-material
@@ -100,7 +100,7 @@ pyyaml-env-tag==0.1
 regex==2024.7.24
     # via mkdocs-material
 requests==2.32.3
-    # via bibman
+    # via bibmancli
     # via habanero
     # via mkdocs-material
 rich==13.7.1
@@ -113,11 +113,11 @@ six==1.16.0
 soupsieve==2.6
     # via beautifulsoup4
 textual==0.79.0
-    # via bibman
+    # via bibmancli
 tqdm==4.66.5
     # via habanero
 typer==0.12.4
-    # via bibman
+    # via bibmancli
 typing-extensions==4.12.2
     # via beautifulsoup4
     # via textual

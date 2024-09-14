@@ -5,7 +5,7 @@ from bibtexparser.model import Entry as BibEntry
 from enum import StrEnum
 from collections.abc import Iterable
 from pylatexenc.latex2text import LatexNodes2Text
-from bibman.bibtex import file_to_bib
+from bibmancli.bibtex import file_to_bib
 
 
 def in_path(prog: str) -> bool:

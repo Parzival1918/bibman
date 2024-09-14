@@ -4,10 +4,10 @@ from pathlib import Path
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.console import Console
 from typing import Optional
-from bibman.resolve import send_request
-from bibman.bibtex import file_to_bib
+from bibmancli.resolve import send_request
+from bibmancli.bibtex import file_to_bib
 from bibtexparser.library import Library
-from bibman.config_file import find_library, get_library
+from bibmancli.config_file import find_library, get_library
 
 
 app = typer.Typer(

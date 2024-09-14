@@ -13,9 +13,9 @@
 beautifulsoup4==4.13.0b2
     # via bs4
 bibtexparser==2.0.0b7
-    # via bibman
+    # via bibmancli
 bs4==0.0.2
-    # via bibman
+    # via bibmancli
 certifi==2024.7.4
     # via requests
 charset-normalizer==3.3.2
@@ -23,7 +23,7 @@ charset-normalizer==3.3.2
 click==8.1.7
     # via typer
 habanero==1.2.6
-    # via bibman
+    # via bibmancli
 idna==3.7
     # via requests
 linkify-it-py==2.0.3
@@ -39,14 +39,14 @@ mdurl==0.1.2
 platformdirs==4.2.2
     # via textual
 pyfzf-iter==0.0.1
-    # via bibman
+    # via bibmancli
 pygments==2.18.0
     # via rich
 pylatexenc==2.10
-    # via bibman
+    # via bibmancli
     # via bibtexparser
 requests==2.32.3
-    # via bibman
+    # via bibmancli
     # via habanero
 rich==13.7.1
     # via textual
@@ -56,11 +56,11 @@ shellingham==1.5.4
 soupsieve==2.6
     # via beautifulsoup4
 textual==0.79.0
-    # via bibman
+    # via bibmancli
 tqdm==4.66.5
     # via habanero
 typer==0.12.4
-    # via bibman
+    # via bibmancli
 typing-extensions==4.12.2
     # via beautifulsoup4
     # via textual

@@ -1,4 +1,4 @@
-import bibman.cli as cli
+import bibmancli.cli as cli
 
 
 def main():

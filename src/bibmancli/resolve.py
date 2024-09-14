@@ -1,6 +1,6 @@
 import requests
 from urllib.parse import quote_plus
-from bibman.bibtex import string_to_bib
+from bibmancli.bibtex import string_to_bib
 from bibtexparser.library import Library
 from habanero import cn
 

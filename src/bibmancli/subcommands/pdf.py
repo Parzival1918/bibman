@@ -5,13 +5,13 @@ from typing import Optional
 from pathlib import Path
 import requests
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from bibman.pdf_utils import (
+from bibmancli.pdf_utils import (
     get_scihub_urls,
     get_scihub_contents,
     extract_pdf_link_from_html,
 )
-from bibman.config_file import find_library, get_library
-from bibman.utils import iterate_files
+from bibmancli.config_file import find_library, get_library
+from bibmancli.utils import iterate_files
 
 
 HEADERS = {
