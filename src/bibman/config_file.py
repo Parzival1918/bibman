@@ -64,3 +64,15 @@ def get_library(path: Path) -> Path | None:
             return None
 
     return None
+
+
+def create_toml_contents(library_name: str) -> str:
+    """
+    Create the contents of a .bibman.toml file
+
+    :param library_name: Name of the library directory
+    :type library_name: str
+    :return: Contents of the .bibman.toml file
+    :rtype: str
+    """
+    return f'[library]\nlocation = "{library_name}"\n'

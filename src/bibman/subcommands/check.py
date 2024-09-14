@@ -77,7 +77,7 @@ def library(
     Check if all entries in the library are properly formatted.
 
     If --fix is provided, will attempt to fix any issues found. Mainly removing files that are not managed by bibman.
-    --location is the direcotry containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
+    --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:
         location = find_library()

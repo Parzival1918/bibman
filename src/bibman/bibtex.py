@@ -95,3 +95,17 @@ def bib_to_string(bib_library: Library | BibEntry) -> str:
     bib_str = write_string(bib_library, bibtex_format=format)
 
     return bib_str
+
+
+def file_to_library(file: Path) -> Library:
+    """
+    Parse a file into a BibTeX library.
+
+    :param file: Path to the file
+    :type file: pathlib.Path
+    :return: BibTeX library
+    :rtype: bibtexparser.library.Library
+    """
+    bib_library = parse_file(file)
+
+    return bib_library

@@ -12,7 +12,11 @@
 -e file:.
 babel==2.16.0
     # via mkdocs-material
+beautifulsoup4==4.13.0b2
+    # via bs4
 bibtexparser==2.0.0b7
+    # via bibman
+bs4==0.0.2
     # via bibman
 certifi==2024.7.4
     # via requests
@@ -106,6 +110,8 @@ shellingham==1.5.4
     # via typer
 six==1.16.0
     # via python-dateutil
+soupsieve==2.6
+    # via beautifulsoup4
 textual==0.79.0
     # via bibman
 tqdm==4.66.5
@@ -113,6 +119,7 @@ tqdm==4.66.5
 typer==0.12.4
     # via bibman
 typing-extensions==4.12.2
+    # via beautifulsoup4
     # via textual
     # via typer
 uc-micro-py==1.0.3

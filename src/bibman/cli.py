@@ -6,13 +6,14 @@ from rich.prompt import Confirm
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
 from rich.console import Console
+import shutil
 from pyfzf import FzfPrompt
 from collections.abc import Iterable
 from bibman.resolve import resolve_identifier
-from bibman.bibtex import bib_to_string, file_to_bib
+from bibman.bibtex import bib_to_string, file_to_bib, file_to_library
 from bibman.utils import in_path, Entry, QueryFields, iterate_files, create_html
-from bibman.config_file import find_library, get_library
-from bibman.subcommands import check
+from bibman.config_file import find_library, get_library, create_toml_contents
+from bibman.subcommands import check, pdf
 from bibman.tui import BibApp
 
 
@@ -28,6 +29,7 @@ app = typer.Typer(
     """,
 )
 app.add_typer(check.app, name="check")
+app.add_typer(pdf.app, name="pdf")
 
 console = Console()
 err_console = Console(stderr=True)
@@ -51,6 +53,9 @@ def add(
     show_entry: Annotated[
         bool, typer.Option(help="Show the fetched BibTeX entry.")
     ] = True,
+    download_pdf: Annotated[
+        bool, typer.Option(help="Download entry pdf if available")
+    ] = True,
     location: Annotated[
         Optional[Path],
         typer.Option(
@@ -73,7 +78,7 @@ def add(
     --note is a note to save with the entry. Default is "No notes for this entry."
     --yes skips the confirmation prompts. Default is --no.
     --show-entry shows the entry before saving it. Defaults to show the entry.
-    --location is the direcotry containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
+    --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:
         location = find_library()
@@ -188,7 +193,7 @@ def show(
     --simple-output shows only the path of the entry. Overrides --output-format, setting it to "{path}".
     --interactive uses fzf to interactively search the entries.
     --fzf-default-opts are the default options for fzf. Defaults are ["-m", "--preview='cat {}'", "--preview-window=wrap"].
-    --location is the direcotry containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
+    --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:
         location = find_library()
@@ -240,7 +245,9 @@ def show(
 
 @app.command()
 def note(
-    name: Annotated[str, typer.Argument(help="Name of the entry to show the note of")],
+    name: Annotated[
+        str, typer.Argument(help="Name of the entry to show the note of")
+    ],
     # edit: Annotated[bool, typer.Option()] = False,
     # interactive: Annotated[bool, typer.Option()] = False,
     # fzf_default_opts: Annotated[List[str], typer.Option()] = [
@@ -248,7 +255,9 @@ def note(
     #     "--preview='cat {}'",
     #     "--preview-window=wrap",
     # ],
-    folder: Annotated[Optional[str], typer.Option(help="Library location where to search")] = None,
+    folder: Annotated[
+        Optional[str], typer.Option(help="Library location where to search")
+    ] = None,
     location: Annotated[
         Optional[Path],
         typer.Option(
@@ -266,7 +275,7 @@ def note(
 
     NAME is the name of the entry.
     --folder is the location in the library where the note is searched. By default all notes are searched.
-    --location is the direcotry containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
+    --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     # --edit opens the note in an editor.
     # --interactive uses fzf to interactively search the entries.
@@ -308,7 +317,7 @@ def note(
                 contents = filepath.read_text()
                 console.print(contents)
                 raise typer.Exit(0)
-    
+
     err_console.print("[red]Note not found![/]")
     raise typer.Exit(1)
     # else:
@@ -339,7 +348,7 @@ def tui(
     """
     Open the TUI interface to manage the library.
 
-    --location is the direcotry containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
+    --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:
         location = find_library()
@@ -363,6 +372,10 @@ def tui(
 @app.command()
 def export(
     filename: Annotated[Optional[str], typer.Option()] = None,
+    rename: Annotated[bool, typer.Option("--rename/--skip")] = True,
+    check: Annotated[
+        bool, typer.Option()
+    ] = True,  # If export to file check that the entries can be read without error
     location: Annotated[
         Optional[Path],
         typer.Option(
@@ -379,7 +392,7 @@ def export(
     Export the BibTeX entries.
 
     --filename is the name of the file to save the entries. If not provided, set by default, the entries are printed to the console.
-    --location is the direcotry containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
+    --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:
         location = find_library()
@@ -407,10 +420,25 @@ def export(
         with open(filepath, "w") as f:
             for entry in iterate_files(location):
                 if entry.contents.key in entry_names:
+                    if not rename:
+                        err_console.print(
+                            "Entry with same name already exists! Skipping..."
+                        )
+                        continue
+
+                    # Rename entry
                     err_console.print(
-                        "Entry with same name already exists! Skipping..."
+                        "Entry with same name already exists! Renaming...",
+                        end=" ",
                     )
-                    continue
+                    idx = 1
+                    original = entry.contents.key
+                    while entry.contents.key in entry_names:
+                        entry.contents.key = original + "_" + str(idx)
+                        idx += 1
+                    err_console.print(
+                        f"old: {original}, new: {entry.contents.key}"
+                    )
 
                 entry_names.append(entry.contents.key)
                 f.write(bib_to_string(entry.contents))
@@ -419,10 +447,22 @@ def export(
         entry_names = []
         for entry in iterate_files(location):
             if entry.contents.key in entry_names:
+                if not rename:
+                    err_console.print(
+                        "Entry with same name already exists! Skipping..."
+                    )
+                    continue
+
+                # Rename entry
                 err_console.print(
-                    "Entry with same name already exists! Skipping..."
+                    "Entry with same name already exists! Renaming...", end=" "
                 )
-                continue
+                idx = 1
+                original = entry.contents.key
+                while entry.contents.key in entry_names:
+                    entry.contents.key = original + "_" + str(idx)
+                    idx += 1
+                err_console.print(f"old: {original}, new: {entry.contents.key}")
 
             entry_names.append(entry.contents.key)
             console.print(
@@ -433,8 +473,15 @@ def export(
 @app.command()
 def html(
     folder_name: Annotated[
-        str, typer.Option(help="Output folder name")
+        str, typer.Option(help="Output folder name, must start with '_'")
     ] = "_site",
+    overwrite: Annotated[
+        bool, typer.Option(help="Overwrite the folder")
+    ] = True,
+    launch: Annotated[
+        bool, typer.Option(help="Launch the site in the browser")
+    ] = False,
+    yes: Annotated[bool, typer.Option("--yes/--no")] = False,
     location: Annotated[
         Optional[Path],
         typer.Option(
@@ -451,7 +498,7 @@ def html(
     Create a simple HTML site with the BibTeX entries.
 
     --folder-name is the name of the folder where the site will be created. Default is '_site'.
-    --location is the direcotry containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
+    --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:
         location = find_library()
@@ -468,10 +515,28 @@ def html(
             )
             raise typer.Exit(1)
 
+    if not folder_name.startswith("_"):
+        err_console.print(
+            "[yellow]Provided folder name does not have trailing '_',[/] adding it myself..."
+        )
+        folder_name = "_" + folder_name
+
     folder = location / folder_name
     if folder.is_dir():
         err_console.print(f"Folder with name '{folder_name}' already exists!")
-        raise typer.Exit(1)
+
+        if not overwrite:
+            raise typer.Exit(1)
+
+        # Delete previous folder
+        if not yes:
+            if not Confirm.ask(
+                "Do you want to overwrite its contents?", console=console
+            ):
+                err_console.print("[red]Contents in folder left untouched[/]")
+                raise typer.Exit(1)
+
+        shutil.rmtree(folder)
 
     folder.mkdir(parents=True, exist_ok=True)
 
@@ -479,6 +544,157 @@ def html(
 
     with open(folder / "index.html", "w") as f:
         f.write(html)
+
+    console.print(f"[bold green]HTML site created in '{folder}'[/]")
+
+    if launch:
+        console.print("Launching site in the default browser... ", end="")
+        typer.launch(str(folder / "index.html"), wait=False)
+        console.print("[bold green]Done![/]")
+
+
+@app.command(name="import")
+def func_import(
+    file: Annotated[
+        Path,
+        typer.Argument(
+            exists=True, file_okay=True, dir_okay=False, readable=True
+        ),
+    ],
+    folder: Annotated[
+        Optional[str], typer.Option(help="Folder where to save the entries")
+    ] = None,
+    location: Annotated[
+        Optional[Path],
+        typer.Option(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            writable=True,
+            readable=True,
+            help="Directory containing the .bibman.toml file",
+        ),
+    ] = None,
+):
+    """
+    Import BibTeX entries from a '.bib' file.
+
+    FILE is the path to the '.bib' file.
+    --folder is the folder where the entries will be saved. If not provided, the entries are saved in the root of the library location.
+    --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
+    """
+    if location is None:
+        location = find_library()
+        if location is None:
+            err_console.print(
+                "[bold red]ERROR[/] .bibman.toml not found in current directory or parents!"
+            )
+            raise typer.Exit(1)
+    else:
+        location = get_library(location)
+        if location is None:
+            err_console.print(
+                "[bold red]ERROR[/] .bibman.toml not found in the provided directory!"
+            )
+            raise typer.Exit(1)
+
+    if not file.name.endswith(".bib"):
+        err_console.print(
+            f"[bold red]ERROR[/] '{file}' does not have '.bib' extension"
+        )
+        raise typer.Exit(1)
+    
+    bib_library = file_to_library(file)
+
+    if len(bib_library.entries) == 0:
+        err_console.print(f"[bold yellow]WARNING[/] No entries found in {file}")
+        raise typer.Exit(1)
+    
+    if folder is None:
+        save_location: Path = location
+    else:
+        folders = folder.split("/")
+        save_location: Path = location.joinpath(*folders)
+
+        # create necessary folders
+        save_location.mkdir(parents=True, exist_ok=True)
+
+    for entry in bib_library.entries:
+        text = bib_to_string(entry)
+        save_path: Path = save_location / (entry.key + ".bib")
+        note_path: Path = save_location / ("." + entry.key + ".txt")
+        if save_path.is_file():
+            err_console.print(
+                f"[bold yellow]WARNING[/] File with same name '{entry.key}' already exists! Skipping..."
+            )
+            continue
+
+        with open(save_path, "w") as f:
+            f.write(text)
+
+        with open(note_path, "w") as f:
+            f.write("No notes for this entry.")
+
+        console.print(
+            f"[bold green]Entry '{entry.key}' saved in '{save_path}'[/]"
+        )
+
+
+@app.command()
+def init(
+    name: Annotated[
+        str, typer.Option(help="Name of the library")
+    ] = "references",
+    git: Annotated[
+        bool, typer.Option(help="Initialize a git repository")
+    ] = False,
+    location: Annotated[
+        Optional[Path],
+        typer.Option(
+            exists=False,
+            file_okay=False,
+            dir_okay=True,
+            writable=True,
+            readable=True,
+            help="Location of the library",
+        ),
+    ] = Path("./"),
+):
+    """
+    Initialize a new library.
+
+    --name is the name of the library.
+    --git initializes a git repository in the library. Default is --no-git.
+    --location is the location of the library. Default is the current directory.
+    """
+    lib_location = location / name
+
+    config_file = location / ".bibman.toml"
+
+    if config_file.exists():
+        err_console.print(
+            "[bold red]ERROR[/] This directory already contains a .bibman.toml file!"
+        )
+        raise typer.Exit(1)
+
+    if lib_location.exists():
+        err_console.print(
+            f"[bold red]ERROR[/] Directory with name '{name}' already exists!"
+        )
+        raise typer.Exit(1)
+
+    lib_location.mkdir(parents=True, exist_ok=True)
+
+    config_file.write_text(create_toml_contents(name))
+
+    console.print(
+        f"[bold green]Library '{name}' initialized in '{lib_location}'[/]"
+    )
+
+    if git:
+        import subprocess
+
+        subprocess.run(["git", "init"], cwd=location)
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ dependencies = [
     "textual>=0.79.0",
     "pylatexenc>=2.10",
     "habanero>=1.2.6",
+    "bs4>=0.0.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
