@@ -95,6 +95,8 @@ def library(
             raise typer.Exit(1)
 
     # check if all entries in library are properly formatted
+    entry_count = 0
+    error_count = 0
     for root, dirs, files in location.walk():
         if root.name.startswith("_"):
             # skip _site folder
@@ -103,46 +105,92 @@ def library(
         for name in files:
             filepath = root / name
 
-            if name.startswith(".") and name.endswith(".txt"):  # possible note
-                # check if file exists with same name but .bib extension
-                bib_name = name[1:-4] + ".bib"
-                bib_file = root / bib_name
-                if not bib_file.is_file():
+            if not name.endswith(".bib"):
+                # check that file is either .txt or .pdf
+                if not name.endswith(".txt") and not name.endswith(".pdf"):
                     console.print(
-                        f"[red]Note file found that does not have an entry file associated[/]: {name}"
+                        f":red_circle: [red]Found file that is not managed by bibman[/]: {filepath}"
                     )
+
+                    error_count += 1
+
                     if fix:
                         console.print(
-                            " |-> Removing note file...",
+                            "  :arrow_forward: Removing file...",
                             end="",
                         )
                         filepath.unlink()
                         console.print(" [green]Done[/]")
+
+                # if file id .txt or .pdf, check if there is a corresponding .bib file
+                if name.endswith(".txt"):
+                    entryname = f"{name[1:-4]}.bib"
+                    entrypath = root / entryname
+                elif name.endswith(".pdf"):
+                    entryname = f"{name[:-4]}.bib"
+                    entrypath = root / entryname
                 else:
+                    continue
+
+                if not entrypath.is_file():
                     console.print(
-                        f"{filepath}: [green]Note with matching entry found[/]"
+                        f":red_circle: [red]Found file without associated entry[/]: {filepath}"
                     )
+
+                    error_count += 1
+
+                    if fix:
+                        console.print(
+                            "  :arrow_forward: Removing file...",
+                            end="",
+                        )
+                        filepath.unlink()
+                        console.print(" [green]Done[/]")
+
                 continue
 
-            if not name.endswith(".bib"):
-                console.print(
-                    f"[red]Found file that is not managed by bibman:[/] {filepath}"
-                )
-
-                if fix:
-                    console.print(
-                        " |-> Removing file...",
-                        end="",
-                    )
-                    filepath.unlink()
-                    console.print(" [green]Done[/]")
+            entry_count += 1
 
             # check that bib file is valid
-            bib_library: Library = file_to_bib(filepath)
+            try:
+                bib_library: Library = file_to_bib(filepath)
+            except Exception as e:
+                console.print(
+                    f":red_circle: [red]Error parsing BibTeX file[/]: {filepath}"
+                )
+                console.print(f"  :down-right_arrow: {e}")
+                error_count += 1
+                continue
 
             if len(bib_library.entries) > 1:
                 console.print(
-                    f"[red]Found file that contains multiple BibTeX entries[/]: {filepath}"
+                    f":red_circle: [red]Found file that contains multiple BibTeX entries[/]: {filepath}"
                 )
+                error_count += 1
+                continue
 
             console.print(f"{filepath}: [green]No warnings raised[/]")
+
+            # check if entry has a note
+            notepath = root / f".{name[:-4]}.txt"
+            if notepath.is_file():
+                console.print(
+                    f"  :arrow_forward: [yellow]Note found[/]: {notepath}"
+                )
+            else:
+                console.print("  :red_circle: [red]No note found[/]")
+                error_count += 1
+
+            # check if entry has a PDF
+            pdfpath = root / f"{name[:-4]}.pdf"
+            if pdfpath.is_file():
+                console.print(
+                    f"  :arrow_forward: [yellow]PDF found[/]: {pdfpath}"
+                )
+            else:
+                console.print("  :red_circle: [red]No PDF found[/]")
+                error_count += 1
+
+    console.print(
+        f"\nChecked [green]{entry_count}[/] entries and a total of [red]{error_count}[/] errors were found"
+    )
