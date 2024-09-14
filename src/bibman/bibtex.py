@@ -64,7 +64,11 @@ def file_to_bib(file: Path) -> Library:
     :return: BibTeX library
     :rtype: bibtexparser.library.Library
     """
-    bib_library = parse_file(file)
+    try:
+        bib_library = parse_file(file)
+    except Exception as e:
+        raise e
+
     if len(bib_library.entries) == 0:
         raise ValueError("No entries found in the BibTeX file")
     elif len(bib_library.entries) > 1:

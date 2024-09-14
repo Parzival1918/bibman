@@ -7,6 +7,7 @@ HEADERS = {
 }
 SCIHUB_URLS_LINK = "https://sci-hub.41610.org/"
 
+
 # SciHub HTML parsing taken mostly from https://github.com/ferru97/PyPaperBot
 def get_scihub_urls() -> list[str] | None:
     """
@@ -20,18 +21,20 @@ def get_scihub_urls() -> list[str] | None:
         response_text = r.text
     else:
         return None
-    
+
     soup = BeautifulSoup(response_text, "html.parser")
-    
+
     links = []
     for ul in soup.findAll("ul"):
         for a in ul.findAll("a"):
             link = a.get("href")
-            if link.startswith("https://sci-hub.") or link.startswith("http://sci-hub."):
+            if link.startswith("https://sci-hub.") or link.startswith(
+                "http://sci-hub."
+            ):
                 links.append(link)
 
     return links
-    
+
 
 def get_scihub_contents(link: str) -> bytes | None:
     """
@@ -59,8 +62,8 @@ def extract_pdf_link_from_html(html: bytes) -> bytes | None:
     """
     soup = BeautifulSoup(html, "html.parser")
 
-    iframe = soup.find(id='pdf')
-    plugin = soup.find(id='plugin')
+    iframe = soup.find(id="pdf")
+    plugin = soup.find(id="plugin")
 
     if iframe is not None:
         result = iframe.get("src")

@@ -5,7 +5,11 @@ from typing import Optional
 from pathlib import Path
 import requests
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from bibman.pdf_utils import get_scihub_urls, get_scihub_contents, extract_pdf_link_from_html
+from bibman.pdf_utils import (
+    get_scihub_urls,
+    get_scihub_contents,
+    extract_pdf_link_from_html,
+)
 from bibman.config_file import find_library, get_library
 from bibman.utils import iterate_files
 
@@ -87,10 +91,19 @@ def download(
         for file in iterate_files(location):
             entry_count += 1
 
+            filename = file.path.stem + ".pdf"
+            pdf_path = file.path.parent / filename
+
+            if pdf_path.exists():
+                console.print(
+                    f"[bold yellow]WARNING[/] PDF already exists for entry '{file.path.relative_to(location)}'"
+                )
+                continue
+
             task = progress.add_task(
                 description=f"Checking bib contents of '{file.path.relative_to(location)}'...",
             )
-            
+
             # Check if file has DOI
             if file.contents.fields_dict.get("doi") is None:
                 progress.remove_task(task)
@@ -100,10 +113,16 @@ def download(
                 continue
 
             # try downloading the PDF using the Sci-Hub URLs
-            progress.update(task, description=f"Searching PDF for '{file.contents.fields_dict['doi'].value}'...")
+            progress.update(
+                task,
+                description=f"Searching PDF for '{file.contents.fields_dict['doi'].value}'...",
+            )
             for url in scihub_urls:
                 # download the PDF
-                progress.update(task, description=f"Searching PDF for '{file.contents.fields_dict['doi'].value}' at '{url}'...")
+                progress.update(
+                    task,
+                    description=f"Searching PDF for '{file.contents.fields_dict['doi'].value}' at '{url}'...",
+                )
                 link = f"{url}/{file.contents.fields_dict['doi']}"
 
                 sci_hub_contents = get_scihub_contents(link)
@@ -114,30 +133,41 @@ def download(
                 if pdf_link is None:
                     continue
 
-                progress.update(task, description=f"PDF link found for '{file.contents.fields_dict['doi'].value}' attempting to download...")
-                filename = file.path.stem + ".pdf"
-                pdf_path = file.path.parent / filename
+                progress.update(
+                    task,
+                    description=f"PDF link found for '{file.contents.fields_dict['doi'].value}' attempting to download...",
+                )
 
                 # attempt to download the PDF
                 r = requests.get(pdf_link, headers=HEADERS)
                 if r.status_code == 200:
                     if pdf_path.exists():
-                        console.print(f"[bold yellow]WARNING[/] PDF already exists for entry '{file.path.relative_to(location)}', overwriting...")
-                        
+                        console.print(
+                            f"[bold yellow]WARNING[/] PDF already exists for entry '{file.path.relative_to(location)}', overwriting..."
+                        )
+
                     with open(pdf_path, "wb") as f:
                         f.write(r.content)
-                    console.print(f"[green]PDF downloaded[/] to '{pdf_path}' for entry '{file.path.relative_to(location)}'")
+                    console.print(
+                        f"[green]PDF downloaded[/] to '{pdf_path}' for entry '{file.path.relative_to(location)}'"
+                    )
                     download_count += 1
                     progress.remove_task(task)
                     break
                 else:
-                    console.print(f"[bold red]ERROR[/] Unable to download PDF from '{pdf_link}' for entry '{file.contents.fields_dict['doi']}'")
-                
+                    console.print(
+                        f"[bold red]ERROR[/] Unable to download PDF from '{pdf_link}' for entry '{file.contents.fields_dict['doi']}'"
+                    )
+
                 progress.remove_task(task)
             else:
-                console.print(f"[bold red]ERROR[/] No PDF found for '{file.contents.fields_dict['doi']}'")
+                console.print(
+                    f"[bold red]ERROR[/] No PDF found for '{file.contents.fields_dict['doi']}'"
+                )
 
-    console.print(f"Downloaded [green]{download_count}[/] PDFs out of [yellow]{entry_count}[/] entries")
+    console.print(
+        f"Downloaded [green]{download_count}[/] PDFs out of [yellow]{entry_count}[/] entries"
+    )
 
 
 @app.command()

@@ -602,14 +602,15 @@ def func_import(
         err_console.print(
             f"[bold red]ERROR[/] '{file}' does not have '.bib' extension"
         )
+
         raise typer.Exit(1)
-    
+
     bib_library = file_to_library(file)
 
     if len(bib_library.entries) == 0:
         err_console.print(f"[bold yellow]WARNING[/] No entries found in {file}")
         raise typer.Exit(1)
-    
+
     if folder is None:
         save_location: Path = location
     else:
