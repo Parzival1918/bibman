@@ -14,4 +14,4 @@ bibman tui [OPTIONS]
 
 ## Options
 
-* **--location** - The location of the [`.bibman.toml` file](../config-format/index.md). If not provided, the program will search for it in the current directory and its parents.
+* `--location` The location of the [`.bibman.toml` file](../config-format/index.md). If not provided, the program will search for it in the current directory and its parents.

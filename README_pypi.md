@@ -1,5 +1,15 @@
 # bibman
 
+<center>
+
+[![Rye](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/rye/main/artwork/badge.json)](https://rye.astral.sh)
+![GitHub License](https://img.shields.io/github/license/parzival1918/bibman)
+
+![PyPI - Version](https://img.shields.io/pypi/v/bibmancli)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bibmancli)
+
+</center>
+
 A CLI utility to manage references in BibTeX format. See the [documentation](https://parzival1918.github.io/bibman/) for more information.
 
 Check my references managed using this tool and hosted in GitHub Pages [here](https://parzival1918.github.io/references/).

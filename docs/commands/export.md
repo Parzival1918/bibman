@@ -14,5 +14,5 @@ bibman export [OPTIONS]
 
 ## Options
 
-* **--filename** - The name of the file to export the library to.
-* **--location** - The location of the [`.bibman.toml` file](../config-format/index.md). If not provided, the program will search for it in the current directory and its parents.
+* `--filename` The name of the file to export the library to.
+* `--location` The location of the [`.bibman.toml` file](../config-format/index.md). If not provided, the program will search for it in the current directory and its parents.

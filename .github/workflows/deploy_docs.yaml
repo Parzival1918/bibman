@@ -3,14 +3,9 @@ name: deploy-mkdocs
 # Only run this when the master branch changes
 on:
   push:
-    branches:
-    - main
-    # Only run if docs contents are modified or mkdocs.yml is modified
-    # include if deploy workflow is also modified
-    paths:
-      - docs/**
-      - mkdocs.yml
-      - .github/workflows/deploy_docs.yaml
+    tags:
+      # Only run when a version tag is pushed
+      - v[0-9]+.[0-9]+.[0-9]+
 
 # This job installs dependencies, builds the book, and pushes it to `gh-pages`
 jobs:

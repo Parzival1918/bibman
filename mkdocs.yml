@@ -1,12 +1,40 @@
 site_name: bibman Docs
 site_url: https://parzival1918.github.io/bibman/
-repo_url: https://github.com/Parzival1918/bibman
+repo_url: https://github.com/Parzival1918/bibman/
 repo_name: parzival1918/bibman
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Usage:
+    - Quick Start: usage/quick_start.md
+  - Install: install.md
+  - Commands:
+    - CLI Options: commands/app_options.md
+    - add: commands/add.md
+    - check: commands/check.md
+    - export: commands/export.md
+    - html: commands/html.md
+    - import: commands/import.md
+    - init: commands/init.md
+    - note: commands/note.md
+    - pdf: commands/pdf.md
+    - show: commands/show.md
+    - tui: commands/tui.md
+  - Configuration: 
+    - .bibman.toml: config-format/index.md
+  - Changelog: changelog.md
 
 theme:
   features:
+    - navigation.path
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.instant
+    - navigation.instant.progress
+    - content.tooltips
   name: material
   palette:
     # Palette toggle for automatic mode
@@ -30,3 +58,15 @@ theme:
         icon: material/brightness-4
         name: Switch to system preference
       primary: deep purple
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - abbr
+  - attr_list
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
