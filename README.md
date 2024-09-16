@@ -22,8 +22,7 @@ Alternatively, you can install it using `pip`:
 
 This will install the `bibman` CLI.
 
-**Warning**: The package uses a pre-release version of `bibtexparser`. This may cause issues with the installation (e.g. I can't install it using rye).
-
-**Warning**: The `pip` installation method is not recommended as it may cause conflicts with other packages. `pipx` creates a virtual environment for the package and installs it there to avoid conflicts.
-
-**Warning**: The CLI is still in development and may have bugs. Please report any issues you encounter.
+> [!WARNING]
+> - The package uses a pre-release version of `bibtexparser`. This may cause issues with the installation (e.g. I can't install it using rye).
+> - The `pip` installation method is not recommended as it may cause conflicts with other packages. `pipx` creates a virtual environment for the package and installs it there to avoid conflicts.
+> - The CLI is still in development and may have bugs. Please report any issues you encounter.
