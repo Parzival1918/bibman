@@ -1,0 +1,126 @@
+name: pypi_publish_and_docs
+
+# only run when version tag is pushed
+# allow to run manually
+on:
+    push:
+        tags:
+        - v[0-9]+.[0-9]+.[0-9]+
+    workflow_dispatch:
+
+jobs:
+  fmt-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install the latest version of rye
+      uses: eifinger/setup-rye@v4
+
+    # Install dependencies
+    - name: Install dependencies
+      run: |
+        rye sync
+
+    - name: Lint
+      run: |
+        rye lint
+
+    - name: Format
+      run: |
+        rye fmt --check
+
+  test:
+    needs: fmt-and-lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install the latest version of rye
+      uses: eifinger/setup-rye@v4
+
+    - name: Rye pin python version to ${{ matrix.python-version }}
+      run: |
+        rye pin ${{ matrix.python-version }} --no-update-requires-python
+
+    # Install dependencies
+    - name: Install dependencies
+      run: |
+        rye sync
+
+    # Run tests
+    - name: Run tests
+      run: |
+        rye test
+
+  publish-pypi:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+        contents: write
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install the latest version of rye
+      uses: eifinger/setup-rye@v4
+
+    # Install dependencies
+    - name: Install dependencies
+      run: |
+        rye sync
+
+    # Build the app
+    - name: Build the app
+      run: |
+        rye build
+
+    # Publish to PyPI
+    - name: Publish to PyPI
+      run: |
+        rye publish pypi
+
+    # Create a release
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "dist/*"
+        bodyFile: "CHANGELOG.md"
+
+  publish-docs:
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # To push a branch 
+      pages: write  # To push to a GitHub Pages site
+      id-token: write # To update the deployment status
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install the latest version of rye
+      uses: eifinger/setup-rye@v4
+
+    # Install dependencies
+    - name: Install dependencies
+      run: |
+        rye sync
+
+    # Build the book
+    - name: Build the book
+      run: |
+        rye run mkdocs build
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        # Upload entire repository
+        path: 'site'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+    
