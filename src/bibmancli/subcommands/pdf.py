@@ -5,6 +5,7 @@ from typing import Optional
 from pathlib import Path
 import requests
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.prompt import Confirm
 from bibmancli.pdf_utils import (
     get_scihub_urls,
     get_scihub_contents,
@@ -123,9 +124,16 @@ def download(
                     task,
                     description=f"Searching PDF for '{file.contents.fields_dict['doi'].value}' at '{url}'...",
                 )
-                link = f"{url}/{file.contents.fields_dict['doi']}"
+                link = f"{url}/{file.contents.fields_dict['doi'].value}"
 
-                sci_hub_contents = get_scihub_contents(link)
+                try:
+                    sci_hub_contents = get_scihub_contents(link)
+                except requests.exceptions.ConnectionError:
+                    console.print(
+                        f"[bold red]ERROR[/] Unable to connect to Sci-Hub URL '{url}'"
+                    )
+                    continue
+
                 if sci_hub_contents is None:
                     continue
 
@@ -156,13 +164,13 @@ def download(
                     break
                 else:
                     console.print(
-                        f"[bold red]ERROR[/] Unable to download PDF from '{pdf_link}' for entry '{file.contents.fields_dict['doi']}'"
+                        f"[bold red]ERROR[/] Unable to download PDF from '{pdf_link}' for entry '{file.contents.fields_dict['doi'].value}'"
                     )
 
                 progress.remove_task(task)
             else:
                 console.print(
-                    f"[bold red]ERROR[/] No PDF found for '{file.contents.fields_dict['doi']}'"
+                    f"[bold red]ERROR[/] No PDF found for '{file.contents.fields_dict['doi'].value}'"
                 )
 
     console.print(
@@ -172,6 +180,35 @@ def download(
 
 @app.command()
 def add(
+    entry: Annotated[
+        str,
+        typer.Argument(
+            help="Entry name to add PDF file to",
+        ),
+    ],
+    pdf_file: Annotated[
+        Path,
+        typer.Argument(
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            writable=False,
+            readable=True,
+            help="PDF file to add to the entry",
+        ),
+    ],
+    folder: Annotated[
+        Optional[str],
+        typer.Option(help="Save location relative to the library location"),
+    ] = None,
+    yes: Annotated[
+        bool,
+        typer.Option(
+            "--yes/--no",
+            help="Skip confirmation",
+            is_flag=True,
+        ),
+    ] = False,
     location: Annotated[
         Optional[Path],
         typer.Option(
@@ -187,4 +224,48 @@ def add(
     """
     Add PDF file of one entry fronm a local file.
     """
-    pass
+    if location is None:
+        location = find_library()
+        if location is None:
+            err_console.print(
+                "[bold red]ERROR[/] .bibman.toml not found in current directory or parents!"
+            )
+            raise typer.Exit(1)
+    else:
+        location = get_library(location)
+        if location is None:
+            err_console.print(
+                "[bold red]ERROR[/] .bibman.toml not found in the provided directory!"
+            )
+            raise typer.Exit(1)
+        
+    # check the --folder option
+    if folder is None:
+        save_location: Path = location
+    else:
+        folders = folder.split("/")
+        save_location: Path = location.joinpath(*folders)
+
+        # create necessary folders
+        save_location.mkdir(parents=True, exist_ok=True)
+
+    # check if the entry exists
+    entry_path = save_location / (entry + ".bib")
+    if not entry_path.exists():
+        err_console.print(f"[bold red]ERROR[/] Entry '{entry}' not found in library")
+        raise typer.Exit(1)
+    
+    # check if the PDF file already exists
+    pdf_path = save_location / (entry + ".pdf")
+    if pdf_path.exists():
+        err_console.print(f"[bold yellow]WARNING[/] PDF file already exists for entry '{entry}'")
+        
+        if not yes:
+            if not Confirm.ask("Do you want to overwrite the existing PDF file?"):
+                err_console.print("Operation cancelled")
+                raise typer.Exit(1)
+            
+    # copy the PDF file
+    pdf_path.write_bytes(pdf_file.read_bytes())
+
+    console.print(f"PDF file '{pdf_file}' added to entry '{entry}'")

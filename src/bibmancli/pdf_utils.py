@@ -64,7 +64,8 @@ def extract_pdf_link_from_html(html: bytes) -> bytes | None:
 
     iframe = soup.find(id="pdf")
     plugin = soup.find(id="plugin")
-
+    result = None
+    
     if iframe is not None:
         result = iframe.get("src")
 

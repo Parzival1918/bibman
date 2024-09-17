@@ -3,8 +3,9 @@
 Command to **initialize a new library.** This command creates a new library with the name provided by the `--name` option in the current directory (with default name `references`). The library will have the following structure:
 
 ```bash
-.bibman.toml
-references/
+./
+├── .bibman.toml
+└── references/
 ```
 
 ## Usage

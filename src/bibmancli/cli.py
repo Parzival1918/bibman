@@ -11,10 +11,21 @@ from pyfzf import FzfPrompt
 from collections.abc import Iterable
 from bibmancli.resolve import resolve_identifier
 from bibmancli.bibtex import bib_to_string, file_to_bib, file_to_library
-from bibmancli.utils import in_path, Entry, QueryFields, iterate_files, create_html
-from bibmancli.config_file import find_library, get_library, create_toml_contents
+from bibmancli.utils import (
+    in_path,
+    Entry,
+    QueryFields,
+    iterate_files,
+    create_html,
+)
+from bibmancli.config_file import (
+    find_library,
+    get_library,
+    create_toml_contents,
+)
 from bibmancli.subcommands import check, pdf
 from bibmancli.tui import BibApp
+from bibmancli.version import __version__
 
 
 app = typer.Typer(
@@ -33,6 +44,35 @@ app.add_typer(pdf.app, name="pdf")
 
 console = Console()
 err_console = Console(stderr=True)
+
+
+def version_callback(value: bool):
+    """
+    Callback to show the version number.
+    """
+    if value:
+        console.print(f"[bold]bibman[/] version [yellow]{__version__}[/]")
+        raise typer.Exit()
+
+
+@app.callback()
+def app_callback(
+    value: Annotated[
+        Optional[bool],
+        typer.Option(
+            "--version",
+            help="Show the version number",
+            is_eager=True,
+            callback=version_callback,
+        ),
+    ] = None,
+):
+    """
+    Add app options.
+
+    --version shows the version number.
+    """
+    pass
 
 
 @app.command()
@@ -248,15 +288,14 @@ def note(
     name: Annotated[
         str, typer.Argument(help="Name of the entry to show the note of")
     ],
-    # edit: Annotated[bool, typer.Option()] = False,
-    # interactive: Annotated[bool, typer.Option()] = False,
-    # fzf_default_opts: Annotated[List[str], typer.Option()] = [
-    #     "-m",
-    #     "--preview='cat {}'",
-    #     "--preview-window=wrap",
-    # ],
     folder: Annotated[
         Optional[str], typer.Option(help="Library location where to search")
+    ] = None,
+    contents: Annotated[
+        Optional[str], typer.Option(help="Replace the note with this content")
+    ] = None,
+    file_contents: Annotated[
+        Optional[Path], typer.Option(help="Replace the note with the contents of this file", exists=True, file_okay=True, dir_okay=False, readable=True)
     ] = None,
     location: Annotated[
         Optional[Path],
@@ -271,15 +310,14 @@ def note(
     ] = None,
 ):
     """
-    Show the note associated with an entry.
+    Show the note associated with an entry or update it.
 
     NAME is the name of the entry.
     --folder is the location in the library where the note is searched. By default all notes are searched.
+    --contents replaces the note with this content.
+    --file-contents replaces the note with the contents of this file. If both --contents and --file-contents are provided, --contents takes precedence.
     --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
-    # --edit opens the note in an editor.
-    # --interactive uses fzf to interactively search the entries.
-    # --fzf-default-opts are the default options for fzf. Defaults are ["-m", "--preview='cat {}'", "--preview-window=wrap"].
     if location is None:
         location = find_library()
         if location is None:
@@ -307,29 +345,22 @@ def note(
     if not name.startswith("."):
         name = "." + name
 
-    # if not interactive:
-    for root, _, files in search_location.walk():
-        for filename in files:
-            if filename == name:
-                # process file
-                # if not edit:
-                filepath = root / filename
-                contents = filepath.read_text()
-                console.print(contents)
-                raise typer.Exit(0)
-
-    err_console.print("[red]Note not found![/]")
-    raise typer.Exit(1)
-    # else:
-    #     if in_path("fzf"):
-    #         pass
-    #         # fzf = FzfPrompt(default_options=fzf_default_opts)
-    #         # result_paths = fzf.prompt(_show_func_fzf(location, filter_dict))
-    #         # print(result_paths)
-    #     else:
-    #         err_console.print("Error fzf not in path")
-    #         raise typer.Exit(1)
-
+    note_path = search_location / name
+    if not note_path.is_file():
+        err_console.print(f"[red]Note for '{name}' in '{search_location}' not found![/]")
+        raise typer.Exit(1)
+    
+    if contents:
+        with open(note_path, "w") as f:
+            f.write(contents)
+        console.print(f"[bold green]Note for '{name}' updated![/]")
+    elif file_contents:
+        with open(file_contents, "r") as f:
+            with open(note_path, "w") as nf:
+                nf.write(f.read())
+        console.print(f"[bold green]Note for '{name}' updated![/]")
+    
+    console.print(note_path.read_text())
 
 @app.command()
 def tui(
