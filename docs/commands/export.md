@@ -16,5 +16,4 @@ bibman export [OPTIONS]
 
 * `--filename` The name of the file to export the library to.
 * `--rename/--skip` Rename the file if it already exists. Default is to skip it.
-- `--check/--no-check` If exporting to a `.bib` file, check the validity of the entries. Default is `--check`.
 * `--location` The location of the [`.bibman.toml` file](../config-format/index.md). If not provided, the program will search for it in the current directory and its parents.

@@ -200,14 +200,24 @@ def add(
 
 @app.command()
 def show(
-    filter_title: Annotated[Optional[str], typer.Option()] = None,
-    filter_entry_types: Annotated[Optional[List[str]], typer.Option()] = None,
+    filter_title: Annotated[
+        Optional[str], typer.Option(help="Filter by title")
+    ] = None,
+    filter_entry_types: Annotated[
+        Optional[List[str]], typer.Option(help="Filter by entry type")
+    ] = None,
     output_format: Annotated[
-        str, typer.Option()
+        str, typer.Option(help="Output format of the entries")
     ] = "{path}: {title}",  # path, title, author, year, month, entry
-    simple_output: Annotated[bool, typer.Option()] = False,
-    interactive: Annotated[bool, typer.Option()] = False,
-    fzf_default_opts: Annotated[List[str], typer.Option()] = [
+    simple_output: Annotated[
+        bool, typer.Option(help="Show only the path of the entry")
+    ] = False,
+    interactive: Annotated[
+        bool, typer.Option(help="Use fzf to interactively search the entries")
+    ] = False,
+    fzf_default_opts: Annotated[
+        List[str], typer.Option(help="Default options for fzf")
+    ] = [
         "-m",
         "--preview='cat {}'",
         "--preview-window=wrap",
@@ -295,7 +305,14 @@ def note(
         Optional[str], typer.Option(help="Replace the note with this content")
     ] = None,
     file_contents: Annotated[
-        Optional[Path], typer.Option(help="Replace the note with the contents of this file", exists=True, file_okay=True, dir_okay=False, readable=True)
+        Optional[Path],
+        typer.Option(
+            help="Replace the note with the contents of this file",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+        ),
     ] = None,
     location: Annotated[
         Optional[Path],
@@ -347,9 +364,11 @@ def note(
 
     note_path = search_location / name
     if not note_path.is_file():
-        err_console.print(f"[red]Note for '{name}' in '{search_location}' not found![/]")
+        err_console.print(
+            f"[red]Note for '{name}' in '{search_location}' not found![/]"
+        )
         raise typer.Exit(1)
-    
+
     if contents:
         with open(note_path, "w") as f:
             f.write(contents)
@@ -359,8 +378,9 @@ def note(
             with open(note_path, "w") as nf:
                 nf.write(f.read())
         console.print(f"[bold green]Note for '{name}' updated![/]")
-    
+
     console.print(note_path.read_text())
+
 
 @app.command()
 def tui(
@@ -402,11 +422,16 @@ def tui(
 
 @app.command()
 def export(
-    filename: Annotated[Optional[str], typer.Option()] = None,
-    rename: Annotated[bool, typer.Option("--rename/--skip")] = True,
-    check: Annotated[
-        bool, typer.Option()
-    ] = True,  # If export to file check that the entries can be read without error
+    filename: Annotated[
+        Optional[str], typer.Option(help="Name of the file to save the entries")
+    ],
+    rename: Annotated[
+        bool,
+        typer.Option("--rename/--skip", help="Rename entries with same name"),
+    ] = True,
+    # check: Annotated[
+    #     bool, typer.Option()
+    # ] = True,  # If export to file check that the entries can be read without error
     location: Annotated[
         Optional[Path],
         typer.Option(
@@ -423,6 +448,7 @@ def export(
     Export the BibTeX entries.
 
     --filename is the name of the file to save the entries. If not provided, set by default, the entries are printed to the console.
+    --rename/--skip renames entries with the same name. Default is --rename. Otherwise, the entry is skipped.
     --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:
@@ -529,6 +555,9 @@ def html(
     Create a simple HTML site with the BibTeX entries.
 
     --folder-name is the name of the folder where the site will be created. Default is '_site'.
+    --overwrite/--no-overwrite overwrites the folder if it already exists. Default is --overwrite.
+    --launch/--no-launch launches the site in the default browser. Default is --no-launch.
+    --yes/--no skips the confirmation prompts. Default is --no.
     --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:
@@ -589,7 +618,11 @@ def func_import(
     file: Annotated[
         Path,
         typer.Argument(
-            exists=True, file_okay=True, dir_okay=False, readable=True
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+            help="Path to the .bib file",
         ),
     ],
     folder: Annotated[
@@ -611,7 +644,7 @@ def func_import(
     Import BibTeX entries from a '.bib' file.
 
     FILE is the path to the '.bib' file.
-    --folder is the folder where the entries will be saved. If not provided, the entries are saved in the root of the library location.
+    --folder is the folder in the library where the entries will be saved. If not provided, the entries are saved in the root of the library location.
     --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:

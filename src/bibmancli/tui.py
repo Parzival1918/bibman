@@ -17,7 +17,8 @@ class FilenameTree(DirectoryTree):
         return [
             path
             for path in paths
-            if path.suffix == ".bib" or (path.is_dir() and (path.name[0] != "_" and path.name[0] != "."))
+            if path.suffix == ".bib"
+            or (path.is_dir() and (path.name[0] != "_" and path.name[0] != "."))
         ]
 
 

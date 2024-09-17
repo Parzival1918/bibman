@@ -46,6 +46,8 @@ def download(
 ):
     """
     Download PDF file of all library entries.
+
+    If --location is not provided, the command will search for the .bibman.toml file in the current directory and its parents.
     """
     if location is None:
         location = find_library()
@@ -223,6 +225,12 @@ def add(
 ):
     """
     Add PDF file of one entry fronm a local file.
+
+    ENTRY is the name of the entry to add the PDF file to.
+    PDF_FILE is the path to the PDF file to add.
+    --folder is the location of the entry relative to the library location.
+    --yes/--no skips the confirmation prompt. Default is --no.
+    --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
     """
     if location is None:
         location = find_library()
@@ -238,7 +246,7 @@ def add(
                 "[bold red]ERROR[/] .bibman.toml not found in the provided directory!"
             )
             raise typer.Exit(1)
-        
+
     # check the --folder option
     if folder is None:
         save_location: Path = location
@@ -252,19 +260,25 @@ def add(
     # check if the entry exists
     entry_path = save_location / (entry + ".bib")
     if not entry_path.exists():
-        err_console.print(f"[bold red]ERROR[/] Entry '{entry}' not found in library")
+        err_console.print(
+            f"[bold red]ERROR[/] Entry '{entry}' not found in library"
+        )
         raise typer.Exit(1)
-    
+
     # check if the PDF file already exists
     pdf_path = save_location / (entry + ".pdf")
     if pdf_path.exists():
-        err_console.print(f"[bold yellow]WARNING[/] PDF file already exists for entry '{entry}'")
-        
+        err_console.print(
+            f"[bold yellow]WARNING[/] PDF file already exists for entry '{entry}'"
+        )
+
         if not yes:
-            if not Confirm.ask("Do you want to overwrite the existing PDF file?"):
+            if not Confirm.ask(
+                "Do you want to overwrite the existing PDF file?"
+            ):
                 err_console.print("Operation cancelled")
                 raise typer.Exit(1)
-            
+
     # copy the PDF file
     pdf_path.write_bytes(pdf_file.read_bytes())
 

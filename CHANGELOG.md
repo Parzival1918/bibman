@@ -2,7 +2,7 @@
 
 ## v0.2.0
 
-Released on ********.
+Released on 2024-09-17.
 
 - New CLI option `--version` to show the version number and exit.
 - `pdf download` terminal output improved.
