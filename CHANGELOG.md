@@ -1,9 +1,9 @@
 # Changelog
 
-## v0.2.1
+## v0.3.0
 
 Released on 2024-09-17.
 
-- Fix version number in the CLI help message.
+- New command `remove` to remove an entry from the library and its note and PDF files.
 
-Pypi: https://pypi.org/project/bibmancli/0.2.1/
+Pypi: https://pypi.org/project/bibmancli/0.3.0/

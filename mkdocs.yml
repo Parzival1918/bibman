@@ -21,6 +21,7 @@ nav:
     - init: commands/init.md
     - note: commands/note.md
     - pdf: commands/pdf.md
+    - remove: commands/remove.md
     - show: commands/show.md
     - tui: commands/tui.md
   - Configuration: 

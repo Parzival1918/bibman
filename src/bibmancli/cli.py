@@ -199,6 +199,89 @@ def add(
 
 
 @app.command()
+def remove(
+    name: Annotated[str, typer.Argument(help="Name of the entry to remove")],
+    folder: Annotated[
+        Optional[str], typer.Option(help="Folder where the entry is located")
+    ] = None,
+    yes: Annotated[bool, typer.Option("--yes/--no", help="Skip confirmation")] = False,
+    location: Annotated[
+        Optional[Path],
+        typer.Option(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            writable=True,
+            readable=True,
+            help="Directory containing the .bibman.toml file",
+        ),
+    ] = None,
+):
+    """
+    Remove an entry from the library. 
+    It also removes the associated note and pdf if they exist.
+    
+    NAME is the name of the entry.
+    --folder is the folder where the entry is located. If not provided, the entry is searched in the root of the library location.
+    --yes skips the confirmation prompts. Default is --no.
+    --location is the directory containing the .bibman.toml file of the library. If not provided, a .bibman.toml file is searched in the current directory and all parent directories.
+    """
+    if location is None:
+        location = find_library()
+        if location is None:
+            err_console.print(
+                "[bold red]ERROR[/] .bibman.toml not found in current directory or parents!"
+            )
+            raise typer.Exit(1)
+    else:
+        location = get_library(location)
+        if location is None:
+            err_console.print(
+                "[bold red]ERROR[/] .bibman.toml not found in the provided directory!"
+            )
+            raise typer.Exit(1)
+
+    if folder is None:
+        search_location = location
+    else:
+        folders = folder.split("/")
+        search_location: Path = location.joinpath(*folders)
+
+    if not name.endswith(".bib"):
+        name = name + ".bib"
+
+    entry_path = search_location / name
+    note_path = search_location / ("." + name.replace(".bib", ".txt"))
+    pdf_path = search_location / name.replace(".bib", ".pdf")
+
+    if not entry_path.is_file():
+        err_console.print(
+            f"[red]Entry for '{name}' in '{search_location}' not found![/]"
+        )
+        raise typer.Exit(1)
+    
+    note_exists = note_path.is_file()
+    pdf_exists = pdf_path.is_file()
+
+    if not yes:
+        if not Confirm.ask(
+            f"Do you want to remove '{name}' and its associated note and pdf?",
+            console=console,
+        ):
+            err_console.print("[red]Entry left untouched[/]")
+            raise typer.Exit(1)
+
+    entry_path.unlink()
+    console.print(f"[bold green]Entry '{name}' removed![/]")
+    if note_exists:
+        console.print(f"[bold green]Note for '{name}' removed![/]")
+        note_path.unlink()
+    if pdf_exists:
+        console.print(f"[bold green]PDF for '{name}' removed![/]")
+        pdf_path.unlink()
+
+
+@app.command()
 def show(
     filter_title: Annotated[
         Optional[str], typer.Option(help="Filter by title")
