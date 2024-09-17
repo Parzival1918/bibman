@@ -204,7 +204,9 @@ def remove(
     folder: Annotated[
         Optional[str], typer.Option(help="Folder where the entry is located")
     ] = None,
-    yes: Annotated[bool, typer.Option("--yes/--no", help="Skip confirmation")] = False,
+    yes: Annotated[
+        bool, typer.Option("--yes/--no", help="Skip confirmation")
+    ] = False,
     location: Annotated[
         Optional[Path],
         typer.Option(
@@ -218,9 +220,9 @@ def remove(
     ] = None,
 ):
     """
-    Remove an entry from the library. 
+    Remove an entry from the library.
     It also removes the associated note and pdf if they exist.
-    
+
     NAME is the name of the entry.
     --folder is the folder where the entry is located. If not provided, the entry is searched in the root of the library location.
     --yes skips the confirmation prompts. Default is --no.
@@ -259,7 +261,7 @@ def remove(
             f"[red]Entry for '{name}' in '{search_location}' not found![/]"
         )
         raise typer.Exit(1)
-    
+
     note_exists = note_path.is_file()
     pdf_exists = pdf_path.is_file()
 
