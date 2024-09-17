@@ -1,6 +1,6 @@
 [project]
 name = "bibmancli"
-version = "0.2.0"
+version = "0.2.1"
 description = "Simple CLI tool to manage BibTeX files."
 authors = [
     { name = "Pedro Juan Royo", email = "pedro.juan.royo@gmail.com" }

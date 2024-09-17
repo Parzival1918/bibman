@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1
+
+Released on 2024-09-17.
+
+- Fix version number in the CLI help message.
+
 ## v0.2.0
 
 Released on 2024-09-17.
