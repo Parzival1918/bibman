@@ -1,0 +1,51 @@
+name: Update docs
+
+# run when docs change
+on:
+    push:
+        paths:
+            - 'docs/**'
+            - 'mkdocs.yml'
+        branches:
+            - main
+    pull_request:
+        paths:
+            - 'docs/**'
+            - 'mkdocs.yml'
+        branches:
+            - main
+
+jobs:
+    publish-docs:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write  # To push a branch 
+            pages: write  # To push to a GitHub Pages site
+            id-token: write # To update the deployment status
+        steps:
+        - uses: actions/checkout@v4
+
+        - name: Install the latest version of rye
+          uses: eifinger/setup-rye@v4
+
+        # Install dependencies
+        - name: Install dependencies
+          run: |
+            rye sync
+
+        # Build the book
+        - name: Build the book
+          run: |
+            rye run mkdocs build
+
+        - name: Setup Pages
+          uses: actions/configure-pages@v5
+
+        - name: Upload artifact
+          uses: actions/upload-pages-artifact@v3
+          with:
+            # Upload entire repository
+            path: 'site'
+        - name: Deploy to GitHub Pages
+          id: deployment
+          uses: actions/deploy-pages@v4
