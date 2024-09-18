@@ -1,0 +1,4 @@
+#!/bin/sh
+
+rye lint || echo "rye lint failed"
+rye fmt --check || echo "rye fmt failed"
