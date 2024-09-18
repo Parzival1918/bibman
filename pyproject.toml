@@ -17,16 +17,13 @@ dependencies = [
 ]
 readme = "README_pypi.md"
 license = "MIT"
-requires-python = ">= 3.8"
+requires-python = ">= 3.11"
 classifiers = [
     # tags
     "Topic :: Utilities",
     "Environment :: Console",
 
     # python versions
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]

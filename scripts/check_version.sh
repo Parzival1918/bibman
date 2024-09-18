@@ -2,8 +2,8 @@
 # Script to that all occurences of the version number are the same
 # Take the one in pyproject.toml as the reference
 
-# Get the version number from pyproject.toml
-version=$(grep "version =" pyproject.toml | cut -d '"' -f 2)
+# Get the version number from pyproject.toml, only use one of the lines
+version=$(grep "version" pyproject.toml | head -n 1 | cut -d '"' -f 2)
 
 # Check that the version number is the same in all files
 grep -q $version src/bibmancli/version.py || echo "Version number is not the same in src/bibmancli/version.py"

@@ -18,15 +18,35 @@ bibtexparser==2.0.0b7
     # via bibmancli
 bs4==0.0.2
     # via bibmancli
+build==1.2.2
+    # via poetry
+cachecontrol==0.14.0
+    # via poetry
 certifi==2024.7.4
     # via requests
+cffi==1.17.1
+    # via xattr
 charset-normalizer==3.3.2
     # via requests
+cleo==2.1.0
+    # via poetry
 click==8.1.7
     # via mkdocs
     # via typer
 colorama==0.4.6
     # via mkdocs-material
+crashtest==0.4.1
+    # via cleo
+    # via poetry
+distlib==0.3.8
+    # via virtualenv
+dulwich==0.21.7
+    # via poetry
+fastjsonschema==2.20.0
+    # via poetry
+filelock==3.16.1
+    # via cachecontrol
+    # via virtualenv
 ghp-import==2.1.0
     # via mkdocs
 habanero==1.2.6
@@ -35,9 +55,15 @@ idna==3.7
     # via requests
 iniconfig==2.0.0
     # via pytest
+installer==0.7.0
+    # via poetry
+jaraco-classes==3.4.0
+    # via keyring
 jinja2==3.1.4
     # via mkdocs
     # via mkdocs-material
+keyring==24.3.1
+    # via poetry
 linkify-it-py==2.0.3
     # via markdown-it-py
 markdown==3.7
@@ -65,18 +91,41 @@ mkdocs-get-deps==0.2.0
 mkdocs-material==9.5.34
 mkdocs-material-extensions==1.3.1
     # via mkdocs-material
+more-itertools==10.5.0
+    # via jaraco-classes
+msgpack==1.1.0
+    # via cachecontrol
 packaging==24.1
+    # via build
     # via mkdocs
+    # via poetry
     # via pytest
 paginate==0.5.7
     # via mkdocs-material
 pathspec==0.12.1
     # via mkdocs
+pexpect==4.9.0
+    # via poetry
+pkginfo==1.11.1
+    # via poetry
 platformdirs==4.2.2
     # via mkdocs-get-deps
+    # via poetry
     # via textual
+    # via virtualenv
 pluggy==1.5.0
     # via pytest
+poetry==1.8.3
+    # via poetry-plugin-export
+poetry-core==1.9.0
+    # via poetry
+    # via poetry-plugin-export
+poetry-plugin-export==1.8.0
+    # via poetry
+ptyprocess==0.7.0
+    # via pexpect
+pycparser==2.22
+    # via cffi
 pyfzf-iter==0.0.1
     # via bibmancli
 pygments==2.18.0
@@ -87,6 +136,9 @@ pylatexenc==2.10
     # via bibtexparser
 pymdown-extensions==10.9
     # via mkdocs-material
+pyproject-hooks==1.1.0
+    # via build
+    # via poetry
 pytest==8.3.2
 python-dateutil==2.9.0.post0
     # via ghp-import
@@ -97,16 +149,24 @@ pyyaml==6.0.2
     # via pyyaml-env-tag
 pyyaml-env-tag==0.1
     # via mkdocs
+rapidfuzz==3.9.7
+    # via cleo
 regex==2024.7.24
     # via mkdocs-material
 requests==2.32.3
     # via bibmancli
+    # via cachecontrol
     # via habanero
     # via mkdocs-material
+    # via poetry
+    # via requests-toolbelt
+requests-toolbelt==1.0.0
+    # via poetry
 rich==13.7.1
     # via textual
     # via typer
 shellingham==1.5.4
+    # via poetry
     # via typer
 six==1.16.0
     # via python-dateutil
@@ -114,8 +174,12 @@ soupsieve==2.6
     # via beautifulsoup4
 textual==0.79.0
     # via bibmancli
+tomlkit==0.13.2
+    # via poetry
 tqdm==4.66.5
     # via habanero
+trove-classifiers==2024.9.12
+    # via poetry
 typer==0.12.4
     # via bibmancli
 typing-extensions==4.12.2
@@ -125,6 +189,11 @@ typing-extensions==4.12.2
 uc-micro-py==1.0.3
     # via linkify-it-py
 urllib3==2.2.2
+    # via dulwich
     # via requests
-watchdog==5.0.2
+virtualenv==20.26.5
+    # via poetry
+watchdog==4.0.2
     # via mkdocs
+xattr==1.1.0
+    # via poetry
