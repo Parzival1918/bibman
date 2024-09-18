@@ -48,6 +48,7 @@ managed = true
 dev-dependencies = [
     "pytest>=8.3.2",
     "mkdocs-material>=9.5.34",
+    "poetry>=1.8.3",
 ]
 
 [tool.hatch.metadata]
@@ -59,3 +60,36 @@ packages = ["src/bibmancli"]
 [tool.ruff]
 line-length = 80
 extend-exclude = [".venv"]
+
+# Add same rye dependencies and info to tool.poetry section in order to be able to use poetry2nix
+[tool.poetry]
+name = "bibmancli"
+version = "0.3.0"
+description = "Simple CLI tool to manage BibTeX files."
+authors = [
+    "Pedro Juan Royo <pedro.juan.royo@gmail.com>"
+]
+license = "MIT"
+readme = "README_pypi.md"
+homepage = "https://github.com/Parzival1918/bibman"
+repository = "https://github.com/Parzival1918/bibman"
+documentation = "https://parzival1918.github.io/bibman/"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+typer = "^0.12.4"
+requests = "^2.32.3"
+bibtexparser = "^2.0.0b7"
+pyfzf-iter = "^0.0.1"
+textual = "^0.79.0"
+pylatexenc = "^2.10"
+habanero = "^1.2.6"
+bs4 = "^0.0.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.3.2"
+mkdocs-material = "^9.5.34"
+poetry = "^1.8.3"
+
+[tool.poetry.scripts]
+bibman = "bibmancli:main"
