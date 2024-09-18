@@ -1,4 +1,5 @@
 #!/bin/sh
+# If check fails echo error message and exit with status 1
 
-rye lint || echo "rye lint failed"
-rye fmt --check || echo "rye fmt failed"
+rye lint -q || { echo "lint failed"; exit 1; }
+rye fmt -q --check || { echo "fmt failed"; exit 1; }
