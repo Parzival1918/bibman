@@ -16,12 +16,18 @@
         # see https://github.com/nix-community/poetry2nix/tree/master#api for more functions and examples.
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
-        lib = pkgs.lib;
+        inherit (pkgs) lib;
+        src = pkgs.fetchFromGitHub {
+          owner = "Parzival1918";
+          repo = "bibman";
+          rev = "v0.3.1";
+          sha256 = "";
+        };
       in
       {
         packages = {
-          myapp = mkPoetryApplication { 
-            projectDir = self;
+          bibman = mkPoetryApplication { 
+            projectDir = src;
             python = pkgs.python312;
             meta = {
               description = "Simple CLI tool to manage BibTeX files.";
@@ -35,7 +41,8 @@
               homepage = "https://github.com/Parzival1918/bibman";
               platforms = lib.platforms.all;
           };
-          default = self.packages.${system}.myapp;
+          default = self.packages.${system}.bibman;
         };
-      });
+      }
+    );
 }
