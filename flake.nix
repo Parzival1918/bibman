@@ -10,23 +10,24 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, poetry2nix }:
+  outputs = { self, nixpkgs, flake-utils, ... }@inputs:
     flake-utils.lib.eachDefaultSystem (system:
       let
         # see https://github.com/nix-community/poetry2nix/tree/master#api for more functions and examples.
         pkgs = nixpkgs.legacyPackages.${system};
-        inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
+        #inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
+        poetry2nix = inputs.poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
         inherit (pkgs) lib;
         src = pkgs.fetchFromGitHub {
           owner = "Parzival1918";
           repo = "bibman";
           rev = "v0.3.1";
-          sha256 = "";
+          sha256 = "sha256-CQNucGmENiJfH9n4qq6vsDss3um0n1A+QCsA2+j2sqM=";
         };
       in
       {
         packages = {
-          bibman = mkPoetryApplication { 
+          bibman = poetry2nix.mkPoetryApplication { 
             projectDir = src;
             python = pkgs.python312;
             meta = {
@@ -40,7 +41,23 @@
               license = lib.licenses.mit;
               homepage = "https://github.com/Parzival1918/bibman";
               platforms = lib.platforms.all;
+            };
+            overrides = poetry2nix.overrides.withDefaults (self: super: {
+              pyfzf-iter = super.pyfzf-iter.overridePythonAttrs (old: {
+                buildInputs = (old.buildInputs or [ ]) ++ [ super.setuptools ];
+              });
+              urllib3 = super.urllib3.overridePythonAttrs (old: {
+                buildInputs = (old.buildInputs or [ ]) ++ [ super.hatch-vcs ];
+              });
+              mkdocs-get-deps = super.mkdocs-get-deps.overridePythonAttrs (old: {
+                buildInputs = (old.buildInputs or [ ]) ++ [ super.hatchling ];
+              });
+              bs4 = super.bs4.overridePythonAttrs (old: {
+                buildInputs = (old.buildInputs or [ ]) ++ [ super.hatchling ];
+              });
+            });
           };
+
           default = self.packages.${system}.bibman;
         };
       }

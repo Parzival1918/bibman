@@ -7,7 +7,6 @@
 #   all-features: false
 #   with-sources: false
 #   generate-hashes: false
-#   universal: false
 
 -e file:.
 babel==2.16.0
@@ -25,7 +24,7 @@ cachecontrol==0.14.0
 certifi==2024.7.4
     # via requests
 cffi==1.17.1
-    # via xattr
+    # via cryptography
 charset-normalizer==3.3.2
     # via requests
 cleo==2.1.0
@@ -38,6 +37,8 @@ colorama==0.4.6
 crashtest==0.4.1
     # via cleo
     # via poetry
+cryptography==43.0.1
+    # via secretstorage
 distlib==0.3.8
     # via virtualenv
 dulwich==0.21.7
@@ -59,6 +60,9 @@ installer==0.7.0
     # via poetry
 jaraco-classes==3.4.0
     # via keyring
+jeepney==0.8.0
+    # via keyring
+    # via secretstorage
 jinja2==3.1.4
     # via mkdocs
     # via mkdocs-material
@@ -165,6 +169,8 @@ requests-toolbelt==1.0.0
 rich==13.7.1
     # via textual
     # via typer
+secretstorage==3.3.3
+    # via keyring
 shellingham==1.5.4
     # via poetry
     # via typer
@@ -195,5 +201,3 @@ virtualenv==20.26.5
     # via poetry
 watchdog==4.0.2
     # via mkdocs
-xattr==1.1.0
-    # via poetry
