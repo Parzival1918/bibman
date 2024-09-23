@@ -30,6 +30,22 @@ Alternatively, you can install it using `pip`:
 > pip install bibmancli
 ```
 
+This repository also includes a Nix Flake to install the application. You can use it by adding to your Flake inputs:
+
+```nix
+inputs.bibman.url = "github:parzival1918/bibman/51a05e0ea3388617f87d19bb0aaee01e30726df6";
+```
+
+and the following to your system or user packages:
+
+```nix
+[
+    (...)
+    inputs.bibman.packages.${systemArch}.bibman
+    (...)
+];
+```
+
 This will install the `bibman` CLI.
 
 > [!WARNING]
