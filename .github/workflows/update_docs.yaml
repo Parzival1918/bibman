@@ -2,18 +2,7 @@ name: Update docs
 
 # run when docs change
 on:
-    push:
-        paths:
-            - 'docs/**'
-            - 'mkdocs.yml'
-        branches:
-            - main
-    pull_request:
-        paths:
-            - 'docs/**'
-            - 'mkdocs.yml'
-        branches:
-            - main
+    workflow_dispatch:
 
 jobs:
     publish-docs:
