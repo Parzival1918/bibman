@@ -102,6 +102,10 @@ def library(
             # skip _site folder
             continue
 
+        if root.name == ".git":
+            # skip .git folder
+            continue
+
         for name in files:
             filepath = root / name
 

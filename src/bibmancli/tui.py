@@ -3,7 +3,7 @@ from textual.widgets import Header, Footer, TextArea, DirectoryTree
 from textual.containers import Horizontal, Vertical
 from pathlib import Path
 from typing import Iterable
-from os import system
+from os import system, environ
 
 
 class FilenameTree(DirectoryTree):
@@ -98,14 +98,16 @@ class BibApp(App[None]):
             return
 
         # get environment variable EDITOR
-        # editor = environ.get("EDITOR", None)
-        # if editor:
-        #     self.notify("EDITOR environment variable not set", severity="warning")
-        #     return
+        editor = environ.get("EDITOR", None)
+        if not editor:
+            self.notify(
+                "EDITOR environment variable not set", severity="warning"
+            )
+            return
 
         with self.suspend():
-            # system(f"{editor} {main_pane.save_path}")
-            system(f"vim {main_pane.save_path}")
+            system(f"{editor} {main_pane.save_path}")
+            # system(f"vim {main_pane.save_path}")
 
         main_pane.update_text(main_pane.save_path)
 
@@ -116,18 +118,20 @@ class BibApp(App[None]):
             return
 
         # get environment variable EDITOR
-        # editor = environ.get("EDITOR", None)
-        # if editor:
-        #     self.notify("EDITOR environment variable not set", severity="warning")
-        #     return
+        editor = environ.get("EDITOR", None)
+        if not editor:
+            self.notify(
+                "EDITOR environment variable not set", severity="warning"
+            )
+            return
 
         filename = main_pane.save_path.name
         notename = "." + filename.replace(".bib", ".txt")
         notepath = main_pane.save_path.parent / notename
 
         with self.suspend():
-            # system(f"{editor} {main_pane.save_path}")
-            system(f"vim {notepath}")
+            system(f"{editor} {notepath}")
+            # system(f"vim {notepath}")
 
         main_pane.update_text(main_pane.save_path)
 

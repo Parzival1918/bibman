@@ -243,6 +243,35 @@ def entries_as_json_string(
     return json.dumps(json_entries, indent=4, ensure_ascii=False)
 
 
+def folder_list_html(entries: Iterable[Entry], library_location: Path) -> str:
+    """
+    Create an HTML list of folders containing the entries
+
+    :param entries: Entries to list
+    :type entries: Iterable[Entry]
+    :param library_location: Location of the library
+    :type library_location: Path
+    :return: HTML string
+    :rtype: str
+    """
+    folders = {}
+    total_count = 0
+    for entry in entries:
+        folder = entry.path.parent
+        total_count += 1
+        if folder not in folders:
+            folders[folder] = 1
+        else:
+            folders[folder] += 1
+
+    html = ""
+    html += f'<option selected value="all">All entries ({total_count} entries)</option>'
+    for folder, count in folders.items():
+        html += f'<option value="{folder.relative_to(library_location).as_posix()}">{folder.relative_to(library_location).as_posix()} ({count} entries)</option>'
+
+    return html
+
+
 def create_html(location: Path) -> str:
     """
     Create an HTML page to display the library entries
@@ -253,6 +282,7 @@ def create_html(location: Path) -> str:
     :rtype: str
     """
     json_string = entries_as_json_string(iterate_files(location), location)
+    folder_list = folder_list_html(iterate_files(location), location)
 
     html = (
         """
@@ -265,7 +295,7 @@ def create_html(location: Path) -> str:
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     </head>
     <body>
-        <div class="container-md align-items-center justify-content-center px-5" id="main-container">
+        <div class="container-md align-items-center justify-content-center px-1 px-lg-5" id="main-container">
             <div class="input-group my-3">
                 <input type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="button-clear" id="input-search">
                 <!-- 
@@ -274,6 +304,11 @@ def create_html(location: Path) -> str:
                 <button class="btn btn-outline-secondary" type="button" id="button-settings" data-bs-toggle="modal" data-bs-target="#settingsModal">Config</button>
                 <button class="btn btn-outline-secondary" type="button" id="button-clear" onclick="ClearClick()">Clear</button>
             </div>
+            <select class="form-select my-3" id="selector" aria-label="Folder selection">
+                """
+        + folder_list
+        + """
+            </select>
             <div class="modal fade" id="entryModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
@@ -358,7 +393,7 @@ def create_html(location: Path) -> str:
             // function to create HTML elements for each entry
             function createEntryHTML(entry, i) {
                 let card = document.createElement("div");
-                card.className = "card my-4 bib-entry";
+                card.className = "card my-4 bib-entry ACTIVE";
                 card.id = entry.html_id;
                 let cardHeader = document.createElement("div");
                 cardHeader.className = "card-header text-body-secondary fs-6";
@@ -409,8 +444,17 @@ def create_html(location: Path) -> str:
                 // If the search bar is empty, show all entries
                 let search_string = searchInput.value;
 
+                // Use only entries that are currently displayed ACTIVE
+                let shownEntries = [];
+                for (let i = 0; i < bibEntries.length; i++) {
+                    entry = bibEntries[i];
+                    if (entry.classList.contains("ACTIVE")) {
+                        shownEntries.push(entries[i]);
+                    }
+                }
+
                 // Fuzzy search on multiple keys
-                let results = fuzzysort.go(search_string, entries, {keys: ["contents.title", "contents.author", "contents.note"], limit: 15, all: true});
+                let results = fuzzysort.go(search_string, shownEntries, {keys: ["contents.title", "contents.author", "contents.note"], limit: 15, all: true});
                 for (let i = 0; i < bibEntries.length; i++) {
                     bibEntries[i].style.display = "none";
                 }
@@ -422,13 +466,53 @@ def create_html(location: Path) -> str:
                 }
             };
 
+            // Show entries from a specific folder when selected
+            let folderSelect = document.getElementById("selector");
+            folderSelect.addEventListener("change", function() {
+                // clear search bar
+                document.getElementById("input-search").value = "";
+                let selectedFolder = folderSelect.value;
+                for (let i = 0; i < bibEntries.length; i++) {
+                    let entry = bibEntries[i];
+                    if (selectedFolder === "all") {
+                        entry.style.display = "block";
+                        entry.classList.add("ACTIVE");
+                    } else if (selectedFolder === ".") {
+                        // show entries in the root folder, so entries with no "/" in their card-header
+                        if (entry.getElementsByClassName("card-header")[0].innerText.indexOf("/") === -1) {
+                            entry.style.display = "block";
+                            entry.classList.add("ACTIVE");
+                        } else {
+                            entry.style.display = "none";
+                            entry.classList.remove("ACTIVE");
+                        }
+                    } else {
+                        if (entry.getElementsByClassName("card-header")[0].innerText.startsWith("Location: " + selectedFolder)) {
+                            entry.style.display = "block";
+                            entry.classList.add("ACTIVE");
+                        } else {
+                            entry.style.display = "none";
+                            entry.classList.remove("ACTIVE");
+                        }
+                    }
+                }
+            });
+
             searchInput.addEventListener("input", function () {
                 fuzzy();
             });
 
             function ClearClick() {
                 document.getElementById("input-search").value = "";
-                fuzzy();
+                // show entries with ACTIVE class
+                for (let i = 0; i < bibEntries.length; i++) {
+                    let entry = bibEntries[i];
+                    if (entry.classList.contains("ACTIVE")) {
+                        entry.style.display = "block";
+                    } else {
+                        entry.style.display = "none";
+                    }
+                }
             };
         </script>
     </body>
