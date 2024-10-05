@@ -19,11 +19,12 @@ This will install the `bibman` CLI. Go to [Commands](./commands/add.md) to see t
 ???+ new "New in v0.3.1"
     - Added Flake to use with nix package manager.
     - Git hash of v0.3.1 is: 51a05e0ea3388617f87d19bb0aaee01e30726df6
+    - Git hash of v0.3.2 is: cac62f87979f67350392956d09dd1576c53ae079
 
 Since v0.3.1 this repository also includes a Nix Flake to install the application. You can use it by adding to your Flake inputs:
 
 ```nix
-inputs.bibman.url = "github:parzival1918/bibman/51a05e0ea3388617f87d19bb0aaee01e30726df6";
+inputs.bibman.url = "github:parzival1918/bibman/cac62f87979f67350392956d09dd1576c53ae079";
 ```
 
 and the following to your system or user packages:
