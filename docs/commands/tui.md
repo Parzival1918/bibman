@@ -1,5 +1,8 @@
 # tui
 
+???+ new "New in v0.3.2"
+    - The editor is not `vim` anymore. Editor to open entry and note files is taken from `EDITOR` environment variable. If the variable is not set it will throw a warning and not open the files.
+
 ![GIF](../media/tui.gif)
 
 Command to **enter a TUI to interact with the library.**

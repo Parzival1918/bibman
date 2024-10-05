@@ -2,7 +2,7 @@
 
 ## v0.3.2
 
-Released on 
+Released on 2024-10-05.
 
 - `check library` command now ignores the `.git` and `.github` folders, and `.gitignore` file.
 - Modify html output of `html` command.

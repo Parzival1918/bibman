@@ -30,6 +30,10 @@ bibman check identifier [OPTIONS] IDENTIFIER
 
 ### library
 
+???+ new "New in v0.3.2"
+    - The command ignores the `.git` and `.github` folders.
+    - the command ignores any `.gitignore` files.
+
 #### Usage
 
 ```bash

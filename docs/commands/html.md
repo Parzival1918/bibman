@@ -1,5 +1,8 @@
 # html
 
+???+ new "New in v0.3.2"
+    - Entries can now be filtered by folder location.
+
 ![GIF](../media/html.gif)
 
 Command to **create a simple HTML page to view your library contents and search interactively.**
