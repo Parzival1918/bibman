@@ -102,11 +102,22 @@ def library(
             # skip _site folder
             continue
 
-        if root.name == ".git":
+        relative_to_loc = root.relative_to(location)
+        parts = relative_to_loc.parts
+
+        if len(parts) > 0 and parts[0] == ".git":
             # skip .git folder
             continue
 
+        if len(parts) > 0 and parts[0] == ".github":
+            # skip .github folder
+            continue
+
         for name in files:
+            if name == ".gitignore":
+                # skip .gitignore
+                continue
+
             filepath = root / name
 
             if not name.endswith(".bib"):
