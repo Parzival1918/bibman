@@ -21,8 +21,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "Parzival1918";
           repo = "bibman";
-          rev = "v0.3.2";
-          sha256 = "sha256-GE9KbdykaXjNHIgUEJQZXy1qCipdYK52Gq+fPzxIwhA=";
+          rev = "v0.3.3";
+          sha256 = "";
         };
       in
       {

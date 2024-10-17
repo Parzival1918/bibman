@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.3
+
+Released on 2024-10-17.
+
+- Handle the errors when trying to resolve identifier in the `add` command.
+
 ## v0.3.2
 
 Released on 2024-10-05.
