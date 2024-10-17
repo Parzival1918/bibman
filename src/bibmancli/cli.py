@@ -26,6 +26,7 @@ from bibmancli.config_file import (
 from bibmancli.subcommands import check, pdf
 from bibmancli.tui import BibApp
 from bibmancli.version import __version__
+from requests import ReadTimeout
 
 
 app = typer.Typer(
@@ -145,7 +146,30 @@ def add(
         progress.add_task(
             description=f"Searching BibTeX entry for {identifier}..."
         )
-        bibtex_library = resolve_identifier(identifier, timeout)
+        try:
+            bibtex_library = resolve_identifier(identifier, timeout)
+        except RuntimeError as e:
+            progress.stop()
+            err_console.print(
+                "[bold red]ERROR[/] Something occurred while trying to resolve identifier... Nothing might exist with this identifier"
+            )
+            err_console.print(e)
+            raise typer.Exit(1)
+        except ReadTimeout:
+            progress.stop()
+            err_console.print(
+                "[bold red]ERROR[/] Could not resolve identifier in the required time..."
+            )
+            err_console.print(
+                "Consider increasing the [bold]--timeout TIMEOUT[/] option."
+            )
+            raise typer.Exit(1)
+        except Exception:
+            progress.stop()
+            err_console.print(
+                "[bold red]ERROR[/] Some error occurred while trying to resolve the identifier."
+            )
+            raise typer.Exit(1)
 
     # select the citation entry from the BibDatabase
     entry = bibtex_library.entries[0]
