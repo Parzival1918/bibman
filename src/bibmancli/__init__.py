@@ -1,3 +1,7 @@
+"""
+CLI to manage references in BibTeX format.
+"""
+
 import bibmancli.cli as cli
 
 

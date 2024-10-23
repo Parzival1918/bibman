@@ -1,3 +1,8 @@
+"""
+Module to parse BibTeX strings to bibtexparser.library.Library objects
+and viceversa.
+"""
+
 from bibtexparser.library import Library
 from bibtexparser.model import Entry as BibEntry
 from bibtexparser.entrypoint import parse_string, parse_file, write_string

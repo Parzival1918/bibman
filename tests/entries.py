@@ -1,0 +1,65 @@
+BIB_STR = """
+@article{beran_frontiers_2023,
+    title      = {Frontiers of molecular crystal structure prediction for pharmaceuticals and functional organic materials},
+    volume     = {14},
+    issn       = {2041-6520, 2041-6539},
+    url        = {https://xlink.rsc.org/?DOI=D3SC03903J},
+    doi        = {10.1039/D3SC03903J},
+    language   = {en},
+    number     = {46},
+    urldate    = {2024-09-14},
+    journal    = {Chemical Science},
+    author     = {Beran, Gregory J. O.},
+    year       = {2023},
+    pages      = {13290--13312},
+}
+"""
+
+ERROR_BIB_STR = """
+@article{beran_frontiers_2023,
+    title      = {Frontiers of molecular crystal structure prediction for pharmaceuticals and functional organic materials},
+    volume     = {14},
+    issn       = {2041-6520, 2041-6539},
+    url        = {https://xlink.rsc.org/?DOI=D3SC03903J},
+    doi        = {10.1039/D3SC03903J},
+    language   = {en},
+    number     = {46},
+    urldate    = {2024-09-14},
+    journal    = {Chemical Science},
+    author     = {Beran, Gregory J. O.},
+    year       = {2023},
+    pages      = {13290--13312},
+
+"""
+
+MULTIPLE_BIB_STR = """
+@article{beran_frontiers_2023,
+    title      = {Frontiers of molecular crystal structure prediction for pharmaceuticals and functional organic materials},
+    volume     = {14},
+    issn       = {2041-6520, 2041-6539},
+    url        = {https://xlink.rsc.org/?DOI=D3SC03903J},
+    doi        = {10.1039/D3SC03903J},
+    language   = {en},
+    number     = {46},
+    urldate    = {2024-09-14},
+    journal    = {Chemical Science},
+    author     = {Beran, Gregory J. O.},
+    year       = {2023},
+    pages      = {13290--13312},
+}
+@article{case_convergence_2016,
+    title      = {Convergence {Properties} of {Crystal} {Structure} {Prediction} by {Quasi}-{Random} {Sampling}},
+    volume     = {12},
+    issn       = {1549-9618, 1549-9626},
+    url        = {https://pubs.acs.org/doi/10.1021/acs.jctc.5b01112},
+    doi        = {10.1021/acs.jctc.5b01112},
+    language   = {en},
+    number     = {2},
+    urldate    = {2024-10-17},
+    journal    = {Journal of Chemical Theory and Computation},
+    author     = {Case, David H. and Campbell, Josh E. and Bygrave, Peter J. and Day, Graeme M.},
+    month      = {feb},
+    year       = {2016},
+    pages      = {910--924},
+}
+"""
