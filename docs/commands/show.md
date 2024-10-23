@@ -1,5 +1,8 @@
 # show
 
+???+ new "New in v0.3.4"
+    - `--filter-entry-types` is now working as expected.
+
 ![GIF](../media/show.gif)
 
 Command to **show the contents of some or all entries in the library.**

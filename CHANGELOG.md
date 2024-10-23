@@ -1,9 +1,9 @@
 # Changelog
 
-## v0.3.3
+## v0.3.4
 
-Released on 2024-10-17.
+Released on .
 
-- Handle the errors when trying to resolve identifier in the `add` command.
+- Fix `--filter-entry-types` option in `show` command.
 
-Pypi: https://pypi.org/project/bibmancli/0.3.3/
+Pypi: https://pypi.org/project/bibmancli/0.3.4/

@@ -1,3 +1,7 @@
+"""
+Module containing utility functions for the bibmancli app.
+"""
+
 from shutil import which
 from pathlib import Path
 import json
@@ -87,8 +91,9 @@ class Entry:
             case QueryFields.ENTRY:
                 if query:
                     return (
-                        self.check_field_exists(QueryFields.ENTRY.value)
-                        and contents[QueryFields.ENTRY.value].value in query
+                        self.contents.entry_type in query
+                        # self.check_field_exists(QueryFields.ENTRY.value)
+                        # and contents[QueryFields.ENTRY.value].value in query
                     )
                 else:
                     return True
