@@ -22,7 +22,7 @@
           owner = "Parzival1918";
           repo = "bibman";
           rev = "v0.3.4";
-          sha256 = "";
+          sha256 = "sha256-xDFHOfbWgCo3UsAENpCzo1mIm8CHl2CrxwORflsP65I=";
         };
       in
       {
