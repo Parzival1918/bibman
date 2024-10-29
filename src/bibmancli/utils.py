@@ -222,7 +222,7 @@ def iterate_files(path: Path, filetype: str = ".bib") -> Iterable[Entry]:
     for root, _, files in get_walker(path):
         for name in files:
             if name.endswith(filetype):  # only count bib files
-                if type(root) == Path:
+                if type(root) is Path:
                     file = root / name
                 else:
                     file = Path(root) / name

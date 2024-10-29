@@ -99,7 +99,7 @@ def library(
     entry_count = 0
     error_count = 0
     for root, dirs, files in get_walker(location):
-        if type(root) != Path:
+        if type(root) is not Path:
             root = Path(root)
 
         if root.name.startswith("_"):
