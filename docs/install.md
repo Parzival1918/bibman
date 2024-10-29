@@ -25,7 +25,7 @@ This will install the `bibman` CLI. Go to [Commands](./commands/add.md) to see t
 Since v0.3.1 this repository also includes a Nix Flake to install the application. You can use it by adding to your Flake inputs:
 
 ```nix
-inputs.bibman.url = "github:parzival1918/bibman/51c45bfd6c60b0654e84f327531f9cf6696e5ba2";
+inputs.bibman.url = "github:parzival1918/bibman/cc05a07074e4e52f23675b921d8389922e1a2c44";
 ```
 
 and the following to your system or user packages:
