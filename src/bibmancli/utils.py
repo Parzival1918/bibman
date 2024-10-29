@@ -7,9 +7,10 @@ from pathlib import Path
 import json
 from bibtexparser.model import Entry as BibEntry
 from enum import StrEnum
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from pylatexenc.latex2text import LatexNodes2Text
 from bibmancli.bibtex import file_to_bib
+import sys
 
 
 def in_path(prog: str) -> bool:
@@ -17,6 +18,20 @@ def in_path(prog: str) -> bool:
     Check if a program is in the PATH
     """
     return which(prog) is not None
+
+
+def get_walker(path: Path) -> Iterator:
+    """
+    Use Path.walk() or os.walk(path) depending on python version.
+    """
+    if sys.version_info.minor <= 11:
+        # use os.walk() when version is 11 or below
+        import os
+
+        return os.walk(path)
+    else:
+        # use Path().walk() for versions above 11
+        return path.walk()
 
 
 class QueryFields(StrEnum):
@@ -203,10 +218,14 @@ def iterate_files(path: Path, filetype: str = ".bib") -> Iterable[Entry]:
     :return: Generator yielding Entry objects
     :rtype: Iterable[Entry]
     """
-    for root, _, files in path.walk():
+
+    for root, _, files in get_walker(path):
         for name in files:
             if name.endswith(filetype):  # only count bib files
-                file = root / name
+                if type(root) == Path:
+                    file = root / name
+                else:
+                    file = Path(root) / name
 
                 # read the file contents
                 bib = file_to_bib(file)

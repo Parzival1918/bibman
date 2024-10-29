@@ -8,6 +8,7 @@ from bibmancli.resolve import send_request
 from bibmancli.bibtex import file_to_bib
 from bibtexparser.library import Library
 from bibmancli.config_file import find_library, get_library
+from bibmancli.utils import get_walker
 
 
 app = typer.Typer(
@@ -97,7 +98,10 @@ def library(
     # check if all entries in library are properly formatted
     entry_count = 0
     error_count = 0
-    for root, dirs, files in location.walk():
+    for root, dirs, files in get_walker(location):
+        if type(root) != Path:
+            root = Path(root)
+
         if root.name.startswith("_"):
             # skip _site folder
             continue

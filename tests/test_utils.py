@@ -25,3 +25,7 @@ def test_Entry_class():
             "Beran, Gregory J. O.", utils.QueryFields.AUTHOR
         )
         assert entry_class.filter("article", utils.QueryFields.ENTRY)
+
+
+def test_filtering_entries():
+    pass
