@@ -21,11 +21,12 @@ This will install the `bibman` CLI. Go to [Commands](./commands/add.md) to see t
     - Git hash of v0.3.1 is: 51a05e0ea3388617f87d19bb0aaee01e30726df6
     - Git hash of v0.3.2 is: 51c45bfd6c60b0654e84f327531f9cf6696e5ba2
     - Git hash of v0.3.3 is: cc05a07074e4e52f23675b921d8389922e1a2c44
+    - Git hash of v0.3.4 is: b337a3a1d7b04d5d76be3e0a2b57c8b9cb66b092
 
 Since v0.3.1 this repository also includes a Nix Flake to install the application. You can use it by adding to your Flake inputs:
 
 ```nix
-inputs.bibman.url = "github:parzival1918/bibman/cc05a07074e4e52f23675b921d8389922e1a2c44";
+inputs.bibman.url = "github:parzival1918/bibman/b337a3a1d7b04d5d76be3e0a2b57c8b9cb66b092";
 ```
 
 and the following to your system or user packages:
